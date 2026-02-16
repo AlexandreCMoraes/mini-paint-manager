@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "nomeDoPersonagem": "Jim",
+    "universo": "Video-Game",
+    "escala": "1:6",
+    "material": "PLA",
+    "marca": "Phrozen",
+    "altura": 34
+  }
+]
