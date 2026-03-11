@@ -45,16 +45,6 @@ function App() {
 
     </div>
   );
-  //   <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '600px', margin: '0 auto' }}>
-  //     <h1 style={{ color: '#333' }}>Mini Paint Manager</h1>
-
-  //     {/* Formulário de cadastro */}
-  //     <MiniaturaForm onAdd={handleAdd} />
-
-  //     {/* Lista de miniaturas */}
-  //     <MiniaturaList miniaturas={miniaturas} />
-  //   </div>
-  // );
 }
 
 export default App;

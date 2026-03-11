@@ -1,11 +1,11 @@
 [
   {
-    "id": 1,
-    "nomeDoPersonagem": "Jim",
-    "universo": "Video-Game",
+    "id": 2,
+    "nomeDoPersonagem": "Harry Potter",
+    "universo": "Harry Potter",
     "escala": "1:6",
-    "material": "PLA",
-    "marca": "Phrozen",
+    "material": "Sem dados",
+    "marca": "Anycubic",
     "altura": 34
   }
 ]

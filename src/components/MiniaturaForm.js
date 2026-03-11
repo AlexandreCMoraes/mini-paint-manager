@@ -6,7 +6,6 @@ export default function MiniaturaForm({ onAdd }) {
 
   // Estados do formulário
   const [nomeDoPersonagem, setNomeDoPersonagem] = useState('');
-  // const [personagem, setPersonagem] = useState('');
   const [universo, setUniverso] = useState('');
   const [escala, setEscala] = useState('');
   const [material, setMaterial] = useState('');
@@ -57,7 +56,6 @@ export default function MiniaturaForm({ onAdd }) {
 
       //  Limpa campos
       setNomeDoPersonagem('');
-      // setPersonagem('');
       setUniverso('');
       setEscala('');
       setMaterial('');
@@ -119,7 +117,7 @@ export default function MiniaturaForm({ onAdd }) {
         style={inputStyle}
       />
       <datalist id="universos">
-        <option value="sem dados" />
+        <option value="N/A" />
         <option value="Marvel" />
         <option value="DC" />
         <option value="Star Wars" />
@@ -136,8 +134,8 @@ export default function MiniaturaForm({ onAdd }) {
         value={escala}
         onChange={e => {
           const valor = e.target.value;
-          // Aceita apenas números, ":" ou "sem dados"
-          if (valor === '' || valor === 'sem dados' || /^[\d:]*$/.test(valor)) {
+          // Aceita apenas números, ":" ou "N/A"
+          if (valor === '' || valor === 'N/A' || /^[\d:]*$/.test(valor)) {
             setEscala(valor);
           }
         }}
@@ -145,7 +143,7 @@ export default function MiniaturaForm({ onAdd }) {
         style={inputStyle}
       />
       <datalist id="escalas">
-        <option value="sem dados" />
+        <option value="N/A" />
         <option value="1:6" />
         <option value="1:12" />
         <option value="1:18" />
@@ -162,7 +160,7 @@ export default function MiniaturaForm({ onAdd }) {
         style={inputStyle}
       />
       <datalist id="materiais">
-        <option value="sem dados" />
+        <option value="N/A" />
         {/* Plásticos comuns */}
         <option value="ABS" />
         <option value="PLA" />
@@ -196,7 +194,7 @@ export default function MiniaturaForm({ onAdd }) {
         style={inputStyle}
       />
       <datalist id="marcas">
-        <option value="sem dados" />
+        <option value="N/A" />
         <option value="Anycubic" />
         <option value="Elegoo" />
         <option value="Creality" />

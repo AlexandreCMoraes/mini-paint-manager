@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
-import Button from '@mui/material/Button';
 import Notification from './Notification';
 
 export default function MiniaturaList({ miniaturas, onDelete }) {
@@ -44,7 +43,7 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
         textShadow: '0 0 5px #00ffcc'
       }}>Miniaturas Cadastradas</h2>
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {miniaturas.map(m => (
+        {miniaturas.slice().reverse().map(m => (
           <li key={m.id} style={{
             background: 'rgba(26, 26, 46, 0.8)',
             color: colors.textLight,
@@ -58,19 +57,23 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
           }}>
 
             <div>
-              <strong style={{ textDecoration: 'underline' }}>Nome do personagem</strong>: {m.nomeDoPersonagem}<br />
+              <strong style={{ textDecoration: 'underline' }}>Nome do personagem</strong>: {m.nome}<br />
               <strong style={{ textDecoration: 'underline' }}>Universo</strong>:  {m.universo}<br />
               <strong style={{ textDecoration: 'underline' }}>Escala</strong>: {m.escala}<br />
               <strong style={{ textDecoration: 'underline' }}>Material</strong>: {m.material}<br />
               <strong style={{ textDecoration: 'underline' }}>Marca da Resina/Filamento</strong>: {m.marca}<br />
-              <strong style={{ textDecoration: 'underline' }}>Altura</strong>: {m.altura}cm
+              <strong style={{ textDecoration: 'underline' }}>Altura</strong>: {m.altura} cm<br />
+              <strong style={{ textDecoration: 'underline' }}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
 
             </div>
 
             {/* BOTÕES EDITAR E DELETAR */}
             <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end' }}>
-              <button
-                onClick={() => {/* TODO: Implementar edição, sem função */ }}
+              {/* BOTÕES EDITAR E DELETAR 
+              TODO: Implementar edição, sem função onClick={() => {}} */}
+              
+              {/* <button
+                onClick={() => {}}
                 style={{
                   padding: '6px 10px',
                   border: 'none',
@@ -83,9 +86,9 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
                 }}
               >
                 Editar
-              </button>
-
-              <button
+              </button> */}
+              {/* BOTÕES EDITAR E DELETAR */}                
+              {/* <button
                 onClick={() => handleDelete(m.id)}
                 style={{
                   padding: '6px 10px',
@@ -99,7 +102,7 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
                 }}
               >
                 Deletar
-              </button>
+              </button> */}
             </div>
 
           </li>
