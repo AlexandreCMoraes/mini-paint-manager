@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
+import { API_ENDPOINTS, NOTIFICATION_TIMEOUT } from '../config/api';
 
 export default function MiniaturaList({ miniaturas, onDelete }) {
   const [mensagemDelete, setMensagemDelete] = useState('');
@@ -8,20 +9,26 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/miniaturas/${id}`, {
+      const res = await fetch(API_ENDPOINTS.MINIATURA_DELETE(id), {
         method: 'DELETE'
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
       if (onDelete) {
         onDelete(id);
         setMensagemDelete('Miniatura deletada com sucesso!');
         setSeveridade('success');
+        setTimeout(() => setMensagemDelete(''), NOTIFICATION_TIMEOUT);
       }
 
     } catch (error) {
       console.error("Erro ao deletar miniatura:", error);
       setMensagemDelete('Erro ao deletar miniatura.');
       setSeveridade('error');
+      setTimeout(() => setMensagemDelete(''), NOTIFICATION_TIMEOUT);
     }
   };
 

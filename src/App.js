@@ -4,15 +4,21 @@ import MiniaturaForm from './components/MiniaturaForm';
 import MiniaturaList from './components/MiniaturaList';
 import planoFundo from './img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from './components/AppBar';
+import { API_ENDPOINTS } from './config/api';
 
 function App() {
   const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
 
   // Função para buscar miniaturas do backend 
   const fetchMiniaturas = async () => {
-    const res = await fetch('http://localhost:5000/miniaturas'); // GET
-    const data = await res.json();
-    setMiniaturas(data); // atualiza estado
+    try {
+      const res = await fetch(API_ENDPOINTS.MINIATURAS);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
+      setMiniaturas(data); // atualiza estado
+    } catch (error) {
+      console.error('Erro ao buscar miniaturas:', error);
+    }
   };
 
   useEffect(() => { fetchMiniaturas(); }, []); // roda apenas uma vez ao abrir app

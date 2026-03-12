@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
+import { API_ENDPOINTS, NOTIFICATION_TIMEOUT } from '../config/api';
 import {
   marcasOptions,
   universoOptions,
@@ -8,45 +9,80 @@ import {
   materiaisOptions
 } from '../data/formOptions';
 
+const INITIAL_FORM_STATE = {
+  nomeDoPersonagem: '',
+  universo: '',
+  escala: '',
+  material: '',
+  marca: '',
+  altura: ''
+};
+
 export default function MiniaturaForm({ onAdd }) {
 
-  // Estados do formulário
-  const [nomeDoPersonagem, setNomeDoPersonagem] = useState('');
-  const [universo, setUniverso] = useState('');
-  const [escala, setEscala] = useState('');
-  const [material, setMaterial] = useState('');
-  const [marca, setMarca] = useState('');
-  const [altura, setAltura] = useState('');
+  // Estados consolidados
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [mensagemErro, setMensagemErro] = useState('');
   const [isHovered, setIsHovered] = useState(false);
+
+  // Handle para mudanças no formulário
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Validação especial para escala
+    if (name === 'escala') {
+      if (value !== '' && value !== 'N/A' && !/^[\d:]*$/.test(value)) {
+        return; // Não aceita valores inválidos
+      }
+    }
+
+    // Capitalização para material
+    if (name === 'material' && value) {
+      setFormData({
+        ...formData,
+        [name]: value.charAt(0).toUpperCase() + value.slice(1)
+      });
+      return;
+    }
+
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
 
   // Função de envio
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validação antes de tudo
-    if (!nomeDoPersonagem || !universo || !escala || !material || !altura || !marca) {
+    if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala || 
+        !formData.material || !formData.altura || !formData.marca) {
       setMensagemErro("Por favor, preencha todos os campos antes de adicionar a miniatura!");
-      setTimeout(() => setMensagemErro(''), 5000);
+      setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
       return;
     }
 
     const newMini = {
-      nomeDoPersonagem,
-      universo,
-      escala,
-      material,
-      marca,
-      altura: parseFloat(altura)
+      nomeDoPersonagem: formData.nomeDoPersonagem,
+      universo: formData.universo,
+      escala: formData.escala,
+      material: formData.material,
+      marca: formData.marca,
+      altura: parseFloat(formData.altura)
     };
 
     try {
-      const res = await fetch('http://localhost:5000/miniaturas', {
+      const res = await fetch(API_ENDPOINTS.MINIATURAS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newMini)
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
       const data = await res.json();
 
@@ -55,22 +91,18 @@ export default function MiniaturaForm({ onAdd }) {
         onAdd(data);
       }
 
-      //  Mensagem de sucesso
-      setMensagemSucesso(`Miniatura "${nomeDoPersonagem}" adicionada com sucesso!`);
+      // Mensagem de sucesso
+      setMensagemSucesso(`Miniatura "${formData.nomeDoPersonagem}" adicionada com sucesso!`);
       setMensagemErro('');
-      setTimeout(() => setMensagemSucesso(''), 5000);
+      setTimeout(() => setMensagemSucesso(''), NOTIFICATION_TIMEOUT);
 
-      //  Limpa campos
-      setNomeDoPersonagem('');
-      setUniverso('');
-      setEscala('');
-      setMaterial('');
-      setAltura('');
-      setMarca('');
+      // Limpa campos
+      setFormData(INITIAL_FORM_STATE);
 
     } catch (error) {
       console.error("Erro ao salvar miniatura:", error);
-      alert("Erro ao conectar com o servidor.");
+      setMensagemErro("Erro ao conectar com o servidor. Tente novamente.");
+      setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
     }
   };
 
@@ -96,7 +128,6 @@ export default function MiniaturaForm({ onAdd }) {
         message={mensagemSucesso}
         severity="success"
         onClose={() => setMensagemSucesso('')}
-      // duration={5000}
       />
 
       {/* Notificação de erro */}
@@ -105,15 +136,14 @@ export default function MiniaturaForm({ onAdd }) {
         message={mensagemErro}
         severity="warning"
         onClose={() => setMensagemErro('')}
-      // duration={5000}
       />
 
       <input
         id="nomeDoPersonagem"
         name="nomeDoPersonagem"
         placeholder="Nome do Personagem"
-        value={nomeDoPersonagem}
-        onChange={e => setNomeDoPersonagem(e.target.value)}
+        value={formData.nomeDoPersonagem}
+        onChange={handleInputChange}
         style={inputStyle}
       />
 
@@ -121,8 +151,8 @@ export default function MiniaturaForm({ onAdd }) {
         id="universo"
         name="universo"
         placeholder="Universo (Marvel, DC, Video-Game, etc)"
-        value={universo}
-        onChange={e => setUniverso(e.target.value)}
+        value={formData.universo}
+        onChange={handleInputChange}
         list="universos"
         style={inputStyle}
       />
@@ -136,18 +166,11 @@ export default function MiniaturaForm({ onAdd }) {
         id="escala"
         name="escala"
         placeholder="Escala (1:12, 1:24, etc)"
-        value={escala}
-        onChange={e => {
-          const valor = e.target.value;
-          // Aceita apenas números, ":" ou "N/A"
-          if (valor === '' || valor === 'N/A' || /^[\d:]*$/.test(valor)) {
-            setEscala(valor);
-          }
-        }}
+        value={formData.escala}
+        onChange={handleInputChange}
         list="escalas"
         style={inputStyle}
-        tooltipText="A escala indica o tamanho da miniatura em relação ao objeto real, por exemplo 1:12 significa 1/12 do tamanho real."
-
+        title="A escala indica o tamanho da miniatura em relação ao objeto real, por exemplo 1:12 significa 1/12 do tamanho real."
       />
       <datalist id="escalas">
         {escalasOptions.map((escala, index) => (
@@ -159,8 +182,8 @@ export default function MiniaturaForm({ onAdd }) {
         id="material"
         name="material"
         placeholder="Material (Plástico, Resina, etc)"
-        value={material}
-        onChange={e => setMaterial(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
+        value={formData.material}
+        onChange={handleInputChange}
         list="materiais"
         style={inputStyle}
       />
@@ -174,8 +197,8 @@ export default function MiniaturaForm({ onAdd }) {
         id="marca"
         name="marca"
         placeholder="Marca da Resina/Filamento"
-        value={marca}
-        onChange={e => setMarca(e.target.value)}
+        value={formData.marca}
+        onChange={handleInputChange}
         list="marcas"
         style={inputStyle}
       />
@@ -190,8 +213,8 @@ export default function MiniaturaForm({ onAdd }) {
         name="altura"
         placeholder="Altura (cm)"
         type="number"
-        value={altura}
-        onChange={e => setAltura(e.target.value)}
+        value={formData.altura}
+        onChange={handleInputChange}
         style={inputStyle}
       />
       {/* Botao add miniatura */}
