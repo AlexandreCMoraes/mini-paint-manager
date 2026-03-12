@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
+import {
+  marcasOptions,
+  universoOptions,
+  escalasOptions,
+  materiaisOptions
+} from '../data/formOptions';
 
 export default function MiniaturaForm({ onAdd }) {
 
@@ -90,7 +96,7 @@ export default function MiniaturaForm({ onAdd }) {
         message={mensagemSucesso}
         severity="success"
         onClose={() => setMensagemSucesso('')}
-        // duration={5000}
+      // duration={5000}
       />
 
       {/* Notificação de erro */}
@@ -99,10 +105,12 @@ export default function MiniaturaForm({ onAdd }) {
         message={mensagemErro}
         severity="warning"
         onClose={() => setMensagemErro('')}
-        // duration={5000}
+      // duration={5000}
       />
 
       <input
+        id="nomeDoPersonagem"
+        name="nomeDoPersonagem"
         placeholder="Nome do Personagem"
         value={nomeDoPersonagem}
         onChange={e => setNomeDoPersonagem(e.target.value)}
@@ -110,6 +118,8 @@ export default function MiniaturaForm({ onAdd }) {
       />
 
       <input
+        id="universo"
+        name="universo"
         placeholder="Universo (Marvel, DC, Video-Game, etc)"
         value={universo}
         onChange={e => setUniverso(e.target.value)}
@@ -117,19 +127,14 @@ export default function MiniaturaForm({ onAdd }) {
         style={inputStyle}
       />
       <datalist id="universos">
-        <option value="N/A" />
-        <option value="Marvel" />
-        <option value="DC" />
-        <option value="Star Wars" />
-        <option value="Harry Potter" />
-        <option value="Anime" />
-        <option value="Tokusatsu" />
-        <option value="Video-Game" />
-        <option value="Originalidade" />
-        <option value="Religião" />
+        {universoOptions.map((universo, index) => (
+          <option key={index} value={universo} />
+        ))}
       </datalist>
 
       <input
+        id="escala"
+        name="escala"
         placeholder="Escala (1:12, 1:24, etc)"
         value={escala}
         onChange={e => {
@@ -141,18 +146,18 @@ export default function MiniaturaForm({ onAdd }) {
         }}
         list="escalas"
         style={inputStyle}
+        tooltipText="A escala indica o tamanho da miniatura em relação ao objeto real, por exemplo 1:12 significa 1/12 do tamanho real."
+
       />
       <datalist id="escalas">
-        <option value="N/A" />
-        <option value="1:6" />
-        <option value="1:12" />
-        <option value="1:18" />
-        <option value="1:24" />
-        <option value="1:48" />
-        <option value="1:72" />
+        {escalasOptions.map((escala, index) => (
+          <option key={index} value={escala} />
+        ))}
       </datalist>
 
       <input
+        id="material"
+        name="material"
         placeholder="Material (Plástico, Resina, etc)"
         value={material}
         onChange={e => setMaterial(e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1))}
@@ -160,33 +165,14 @@ export default function MiniaturaForm({ onAdd }) {
         style={inputStyle}
       />
       <datalist id="materiais">
-        <option value="N/A" />
-        {/* Plásticos comuns */}
-        <option value="ABS" />
-        <option value="PLA" />
-        <option value="PETG" />
-        {/* Plásticos para engenharia */}
-        <option value="PC" />
-        <option value="Nylon" />
-        <option value="PC-ABS" />
-        <option value="PC-ISSO" />
-        <option value="PSU" />
-        {/* Resinas */}
-        <option value="Resina termolítica" />
-        <option value="Resina fotossensível" />
-        <option value="Resina epóxi" />
-        {/* Borracha */}
-        <option value="Borracha natural" />
-        <option value="Borracha sintética" />
-        {/* Metálicos */}
-        <option value="Aço inoxidável" />
-        <option value="Alumínio" />
-        <option value="Liga de titânio" />
-        <option value="Cobre" />
-        <option value="Metais preciosos" />
+        {materiaisOptions.map((mat, index) => (
+          <option key={index} value={mat} />
+        ))}
       </datalist>
 
       <input
+        id="marca"
+        name="marca"
         placeholder="Marca da Resina/Filamento"
         value={marca}
         onChange={e => setMarca(e.target.value)}
@@ -194,38 +180,14 @@ export default function MiniaturaForm({ onAdd }) {
         style={inputStyle}
       />
       <datalist id="marcas">
-        <option value="N/A" />
-        <option value="Anycubic" />
-        <option value="Elegoo" />
-        <option value="Creality" />
-        <option value="Formlabs" />
-        <option value="Phrozen" />
-        <option value="MoonRay" />
-        <option value="Photocura" />
-        <option value="Slim3D" />
-        <option value="3D Cure" />
-        <option value="eSUN" />
-        <option value="Sunlu" />
-        <option value="Hatchbox" />
-        <option value="Overture" />
-        <option value="Inland" />
-        <option value="Prusament" />
-        <option value="Bambu Lab" />
-        <option value="GTMax3D" />
-        <option value="Voolt3D" />
-        <option value="3DFila" />
-        <option value="3D Lab" />
-        <option value="Dynalabs" />
-        <option value="3nMax" />
-        <option value="3n3" />
-        <option value="Multifila" />
-        <option value="Desktop Metal" />
-        <option value="Stratasys" />
-        <option value="Zortrax" />
-        <option value="ColorFabb" />
+        {marcasOptions.map((marca, index) => (
+          <option key={index} value={marca} />
+        ))}
       </datalist>
 
       <input
+        id="altura"
+        name="altura"
         placeholder="Altura (cm)"
         type="number"
         value={altura}

@@ -88,7 +88,7 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
                 Editar
               </button> */}
               {/* BOTÕES EDITAR E DELETAR */}                
-              {/* <button
+               <button
                 onClick={() => handleDelete(m.id)}
                 style={{
                   padding: '6px 10px',
@@ -102,7 +102,7 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
                 }}
               >
                 Deletar
-              </button> */}
+              </button> 
             </div>
 
           </li>
