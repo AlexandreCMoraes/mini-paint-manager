@@ -7,7 +7,13 @@ import CancelButton from './Buttons/CancelButton';
 import AddButton from './Buttons/AddButton';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
-import { handleDeleteMiniatura, handleSaveMiniatura } from '../actions/miniaturasActions';
+import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturasActions';
+import {
+  marcasOptions,
+  universoOptions,
+  escalasOptions,
+  materiaisOptions
+} from '../data/formOptions';
 
 export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // Estados para modal de edição da miniatura
@@ -39,6 +45,11 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
 
   // salvar edição
   const handleSave = (e) => handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen, setSeveridade);
+
+  // Handle para mudanças nos campos do modal de edição (mantém validações de MiniaturaForm)
+  // Validação especial para escala para colocar apenas números e ":" (para escalas como 1:24)
+  // A mesma logica utilizada no cadastro é aplicada aqui
+  const handleChange = (e) => handleInputChange(e, editFormData, setEditFormData);
 
   return (
     <div style={{ marginTop: '20px', fontFamily }}>
@@ -91,14 +102,14 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
             </div>
 
             {/* BOTÕES EDITAR E DELETAR */}
-            {/* <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end' }}>
               <EditButton onClick={() => handleEditClick(m)}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered} />
               <DeleteButton id={m.id} onDelete={handleDelete}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered} />
-            </div> */}
+            </div>
           </li>
         ))}
       </ul>
@@ -136,44 +147,74 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
             <form onSubmit={handleSave}>
               <input
                 type="text"
+                name="nomeDoPersonagem"
                 placeholder="Nome do Personagem"
                 value={editFormData.nomeDoPersonagem || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, nomeDoPersonagem: e.target.value })}
+                onChange={handleChange}
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
               <input
                 type="text"
+                name="universo"
                 placeholder="Universo"
                 value={editFormData.universo || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, universo: e.target.value })}
+                onChange={handleChange}
+                list="universos"
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
+              <datalist id="universos">
+                {universoOptions.map((universo, index) => (
+                  <option key={index} value={universo} />
+                ))}
+              </datalist>
               <input
                 type="text"
+                name="escala"
                 placeholder="Escala"
                 value={editFormData.escala || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, escala: e.target.value })}
+                onChange={handleChange}
+                list="escalas"
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
+              <datalist id="escalas">
+                {escalasOptions.map((escala, index) => (
+                  <option key={index} value={escala} />
+                ))}
+              </datalist>
               <input
                 type="text"
+                name="material"
                 placeholder="Material"
                 value={editFormData.material || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, material: e.target.value })}
+                onChange={handleChange}
+                list="materiais"
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
+              <datalist id="materiais">
+                {materiaisOptions.map((mat, index) => (
+                  <option key={index} value={mat} />
+                ))}
+              </datalist>
               <input
                 type="text"
+                name="marca"
                 placeholder="Marca"
                 value={editFormData.marca || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, marca: e.target.value })}
+                onChange={handleChange}
+                list="marcas"
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
+              <datalist id="marcas">
+                {marcasOptions.map((marca, index) => (
+                  <option key={index} value={marca} />
+                ))}
+              </datalist>
               <input
                 type="number"
+                name="altura"
                 placeholder="Altura (cm)"
                 value={editFormData.altura || ''}
-                onChange={(e) => setEditFormData({ ...editFormData, altura: e.target.value })}
+                onChange={handleChange}
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
               {/* Botões das miniaturas cadastradas */}
