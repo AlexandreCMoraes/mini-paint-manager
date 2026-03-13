@@ -144,9 +144,9 @@ export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagem
 
         const data = await res.json();
 
-        // Atualiza lista no componente pai 
+        // Atualiza lista no componente pai e renderiza nova miniatura editada
         if (onUpdate) {
-            onUpdate(data);
+            onUpdate(data.updated); // backend retorna { message, updated }
         }
 
         // Fecha modal imediatamente
