@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
-import { API_ENDPOINTS, NOTIFICATION_TIMEOUT } from '../config/api';
+import AddButton from './Buttons/AddButton';
+import { NOTIFICATION_TIMEOUT } from '../config/api';
+import { handleInputChange, handleSubmitMiniatura } from '../actions/miniaturasActions';
 import {
   marcasOptions,
   universoOptions,
@@ -9,6 +11,7 @@ import {
   materiaisOptions
 } from '../data/formOptions';
 
+// Estado inicial do formulário
 const INITIAL_FORM_STATE = {
   nomeDoPersonagem: '',
   universo: '',
@@ -27,84 +30,10 @@ export default function MiniaturaForm({ onAdd }) {
   const [isHovered, setIsHovered] = useState(false);
 
   // Handle para mudanças no formulário
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Validação especial para escala
-    if (name === 'escala') {
-      if (value !== '' && value !== 'N/A' && !/^[\d:]*$/.test(value)) {
-        return; // Não aceita valores inválidos
-      }
-    }
-
-    // Capitalização para material
-    if (name === 'material' && value) {
-      setFormData({
-        ...formData,
-        [name]: value.charAt(0).toUpperCase() + value.slice(1)
-      });
-      return;
-    }
-
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
+  const handleChange = (e) => handleInputChange(e, formData, setFormData);
 
   // Função de envio
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validação antes de tudo
-    if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala || 
-        !formData.material || !formData.altura || !formData.marca) {
-      setMensagemErro("Por favor, preencha todos os campos antes de adicionar a miniatura!");
-      setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
-      return;
-    }
-
-    const newMini = {
-      nomeDoPersonagem: formData.nomeDoPersonagem,
-      universo: formData.universo,
-      escala: formData.escala,
-      material: formData.material,
-      marca: formData.marca,
-      altura: parseFloat(formData.altura)
-    };
-
-    try {
-      const res = await fetch(API_ENDPOINTS.MINIATURAS, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMini)
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const data = await res.json();
-
-      // Atualiza lista no componente pai
-      if (onAdd) {
-        onAdd(data);
-      }
-
-      // Mensagem de sucesso
-      setMensagemSucesso(`Miniatura "${formData.nomeDoPersonagem}" adicionada com sucesso!`);
-      setMensagemErro('');
-      setTimeout(() => setMensagemSucesso(''), NOTIFICATION_TIMEOUT);
-
-      // Limpa campos
-      setFormData(INITIAL_FORM_STATE);
-
-    } catch (error) {
-      console.error("Erro ao salvar miniatura:", error);
-      setMensagemErro("Erro ao conectar com o servidor. Tente novamente.");
-      setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
-    }
-  };
+  const handleSubmit = (e) => handleSubmitMiniatura(e, formData, onAdd, setMensagemSucesso, setMensagemErro, setFormData, INITIAL_FORM_STATE);
 
   // Render
   return (
@@ -137,37 +66,39 @@ export default function MiniaturaForm({ onAdd }) {
         severity="warning"
         onClose={() => setMensagemErro('')}
       />
-
+      {/* Input para o nome do personagem */}
       <input
         id="nomeDoPersonagem"
         name="nomeDoPersonagem"
         placeholder="Nome do Personagem"
         value={formData.nomeDoPersonagem}
-        onChange={handleInputChange}
+        onChange={handleChange}
         style={inputStyle}
+        title='O nome do personagem é o nome da miniatura, por exemplo "Homem-Aranha" ou "Master Chief".'
       />
-
+      {/* Input para o universo */}
       <input
         id="universo"
         name="universo"
         placeholder="Universo (Marvel, DC, Video-Game, etc)"
         value={formData.universo}
-        onChange={handleInputChange}
+        onChange={handleChange}
         list="universos"
         style={inputStyle}
+        title='O universo indica a origem do personagem, por exemplo "Marvel", "DC", ou "Video-Game".'
       />
       <datalist id="universos">
         {universoOptions.map((universo, index) => (
           <option key={index} value={universo} />
         ))}
       </datalist>
-
+      {/* Input para a escala */}
       <input
         id="escala"
         name="escala"
         placeholder="Escala (1:12, 1:24, etc)"
         value={formData.escala}
-        onChange={handleInputChange}
+        onChange={handleChange}
         list="escalas"
         style={inputStyle}
         title="A escala indica o tamanho da miniatura em relação ao objeto real, por exemplo 1:12 significa 1/12 do tamanho real."
@@ -177,66 +108,52 @@ export default function MiniaturaForm({ onAdd }) {
           <option key={index} value={escala} />
         ))}
       </datalist>
-
+      {/* Input para o material */}
       <input
         id="material"
         name="material"
         placeholder="Material (Plástico, Resina, etc)"
         value={formData.material}
-        onChange={handleInputChange}
+        onChange={handleChange}
         list="materiais"
         style={inputStyle}
+        title="O material indica o tipo de substância usada para criar a miniatura, por exemplo plástico ou resina."
+
       />
       <datalist id="materiais">
         {materiaisOptions.map((mat, index) => (
           <option key={index} value={mat} />
         ))}
       </datalist>
-
+      {/* Input para a marca da resina/filamento */}
       <input
         id="marca"
         name="marca"
         placeholder="Marca da Resina/Filamento"
         value={formData.marca}
-        onChange={handleInputChange}
+        onChange={handleChange}
         list="marcas"
         style={inputStyle}
+        title='A marca indica o fabricante do material usado para criar a miniatura, por exemplo "Elegoo" ou "Anycubic".'
       />
       <datalist id="marcas">
         {marcasOptions.map((marca, index) => (
           <option key={index} value={marca} />
         ))}
       </datalist>
-
+      {/* Input para a altura */}
       <input
         id="altura"
         name="altura"
         placeholder="Altura (cm)"
         type="number"
         value={formData.altura}
-        onChange={handleInputChange}
+        onChange={handleChange}
         style={inputStyle}
+        title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" para uma miniatura de 15 cm de altura.'
       />
-      {/* Botao add miniatura */}
-      <button
-        type="submit"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-          padding: '10px',
-          border: 'none',
-          borderRadius: '5px',
-          background: colors.primaryButton,
-          color: '#000',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          boxShadow: isHovered ? '0 0 15px #00ffcc' : '0 0 10px #00ffcc',
-          transition: '0.3s',
-          transform: isHovered ? 'scale(0.95)' : 'scale(1)'
-        }}
-      >
-        Adicionar Miniatura
-      </button>
+      {/* Botao add miniatura form */}
+      <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} />
 
     </form>
   );

@@ -1,36 +1,44 @@
 import React, { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
-import { API_ENDPOINTS, NOTIFICATION_TIMEOUT } from '../config/api';
+import DeleteButton from './Buttons/DeleteButton';
+import EditButton from './Buttons/EditButton';
+import CancelButton from './Buttons/CancelButton';
+import AddButton from './Buttons/AddButton';
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import { handleDeleteMiniatura, handleSaveMiniatura } from '../actions/miniaturasActions';
 
-export default function MiniaturaList({ miniaturas, onDelete }) {
+export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
+  // Estados para modal de edição da miniatura
+  const [open, setOpen] = useState(false);
+  const [selectedMiniatura, setSelectedMiniatura] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [isHovered, setIsHovered] = useState(false);
+  // Estados para notificações
   const [mensagemDelete, setMensagemDelete] = useState('');
   const [severidade, setSeveridade] = useState('success');
+  const [mensagemSucesso, setMensagemSucesso] = useState('');
+  const [mensagemErro, setMensagemErro] = useState('');
+  // Handle para deletar miniatura
+  const handleDelete = (id) => handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
 
-  const handleDelete = async (id) => {
-    try {
-      const res = await fetch(API_ENDPOINTS.MINIATURA_DELETE(id), {
-        method: 'DELETE'
-      });
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      if (onDelete) {
-        onDelete(id);
-        setMensagemDelete('Miniatura deletada com sucesso!');
-        setSeveridade('success');
-        setTimeout(() => setMensagemDelete(''), NOTIFICATION_TIMEOUT);
-      }
-
-    } catch (error) {
-      console.error("Erro ao deletar miniatura:", error);
-      setMensagemDelete('Erro ao deletar miniatura.');
-      setSeveridade('error');
-      setTimeout(() => setMensagemDelete(''), NOTIFICATION_TIMEOUT);
-    }
+  // clicar em editar abre modal
+  const handleEditClick = (mini) => {
+    setSelectedMiniatura(mini);
+    setEditFormData({
+      nomeDoPersonagem: mini.nome,
+      universo: mini.universo,
+      escala: mini.escala,
+      material: mini.material,
+      marca: mini.marca,
+      altura: mini.altura.toString()
+    });
+    setOpen(true);
   };
+
+  // salvar edição
+  const handleSave = (e) => handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen, setSeveridade);
 
   return (
     <div style={{ marginTop: '20px', fontFamily }}>
@@ -41,7 +49,16 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
         severity={severidade}
         onClose={() => setMensagemDelete('')}
         duration={5000}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      />
+      {/* Notificação de sucesso de edição */}
+      <Notification
+        open={!!mensagemSucesso}
+        message={mensagemSucesso}
+        severity="success"
+        onClose={() => setMensagemSucesso('')}
+        duration={5000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
 
       <h2 style={{
@@ -71,51 +88,105 @@ export default function MiniaturaList({ miniaturas, onDelete }) {
               <strong style={{ textDecoration: 'underline' }}>Marca da Resina/Filamento</strong>: {m.marca}<br />
               <strong style={{ textDecoration: 'underline' }}>Altura</strong>: {m.altura} cm<br />
               <strong style={{ textDecoration: 'underline' }}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
-
             </div>
 
             {/* BOTÕES EDITAR E DELETAR */}
             <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end' }}>
-              {/* BOTÕES EDITAR E DELETAR 
-              TODO: Implementar edição, sem função onClick={() => {}} */}
-              
-              {/* <button
-                onClick={() => {}}
-                style={{
-                  padding: '6px 10px',
-                  border: 'none',
-                  borderRadius: '5px',
-                  background: '#0066ff',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  boxShadow: '0 0 8px #0066ff',
-                  transition: '0.3s',
-                }}
-              >
-                Editar
-              </button> */}
-              {/* BOTÕES EDITAR E DELETAR */}                
-               <button
-                onClick={() => handleDelete(m.id)}
-                style={{
-                  padding: '6px 10px',
-                  border: 'none',
-                  borderRadius: '5px',
-                  background: '#ff0033',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  boxShadow: '0 0 8px #ff0033',
-                  transition: '0.3s',
-                }}
-              >
-                Deletar
-              </button> 
+              <EditButton onClick={() => handleEditClick(m)}
+                isHovered={isHovered}
+                setIsHovered={setIsHovered} />
+              <DeleteButton id={m.id} onDelete={handleDelete}
+                isHovered={isHovered}
+                setIsHovered={setIsHovered} />
             </div>
-
           </li>
-
         ))}
       </ul>
+
+      {/* modal de edição simples */}
+      <Modal
+        open={open}
+        // fechar modal ao clicar no botão ou apertar ESC
+        onClose={(event, reason) => {
+          if (reason === 'escapeKeyDown') {
+            setOpen(false);
+          }
+        }}
+        disableEscapeKeyDown={false}
+        aria-labelledby="edit-miniatura-modal"
+        aria-describedby="basic-edit-modal"
+      >
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          border: '2px solid #000',
+          boxShadow: 24,
+          p: 4,
+          background: 'rgba(26, 26, 46)',
+          color: colors.textLight,
+
+
+        }}>
+          <h2 id="edit-miniatura-modal" style={{ textAlign: "center" }}>Editar Miniatura</h2>
+          {selectedMiniatura ? (
+            <form onSubmit={handleSave}>
+              <input
+                type="text"
+                placeholder="Nome do Personagem"
+                value={editFormData.nomeDoPersonagem || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, nomeDoPersonagem: e.target.value })}
+                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+              />
+              <input
+                type="text"
+                placeholder="Universo"
+                value={editFormData.universo || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, universo: e.target.value })}
+                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+              />
+              <input
+                type="text"
+                placeholder="Escala"
+                value={editFormData.escala || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, escala: e.target.value })}
+                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+              />
+              <input
+                type="text"
+                placeholder="Material"
+                value={editFormData.material || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, material: e.target.value })}
+                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+              />
+              <input
+                type="text"
+                placeholder="Marca"
+                value={editFormData.marca || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, marca: e.target.value })}
+                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+              />
+              <input
+                type="number"
+                placeholder="Altura (cm)"
+                value={editFormData.altura || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, altura: e.target.value })}
+                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+              />
+              {/* Botões no final */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                <CancelButton onCancel={() => setOpen(false)}
+                  isHovered={isHovered}
+                  setIsHovered={setIsHovered} />
+                <AddButton label='Salvar Alterações' isHovered={isHovered} setIsHovered={setIsHovered} />
+              </div>
+            </form>
+          ) : null}
+        </Box>
+      </Modal>
     </div>
   );
 }

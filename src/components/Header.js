@@ -1,5 +1,3 @@
-// src/components/Header.js
-import React from 'react';
 import { colors, fontFamily } from '../styles/theme';
 
 export default function Header() {

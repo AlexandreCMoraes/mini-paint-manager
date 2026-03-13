@@ -1,5 +1,3 @@
-// src/data/formOptions.js
-
 // Marcas de resina/filamento
 export const marcasOptions = [
     "N/A", "Anycubic", "Elegoo", "Creality", "Formlabs", "Phrozen",

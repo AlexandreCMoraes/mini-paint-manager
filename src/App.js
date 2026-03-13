@@ -9,7 +9,7 @@ import { API_ENDPOINTS } from './config/api';
 function App() {
   const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
 
-  // Função para buscar miniaturas do backend 
+  // Função para buscar miniaturas do backend e atualizar estado
   const fetchMiniaturas = async () => {
     try {
       const res = await fetch(API_ENDPOINTS.MINIATURAS);
@@ -33,6 +33,11 @@ function App() {
     setMiniaturas(miniaturas.filter(m => m.id !== id));
   };
 
+  // Quando atualizar
+  const handleUpdate = (updatedMini) => {
+    setMiniaturas(miniaturas.map(m => m.id === updatedMini.id ? updatedMini : m));
+  };
+
   return (
 
     <div style={{
@@ -47,7 +52,7 @@ function App() {
       <Header />
       <MiniaturaForm onAdd={handleAdd} />
       {/* <MiniaturaList miniaturas={miniaturas} /> */}
-      <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} />
+      <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} />
 
     </div>
   );
