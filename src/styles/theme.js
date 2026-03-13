@@ -3,9 +3,9 @@ export const colors = {
   primaryButton: '#00ffcc', // botão neon principal
   secondaryButton: '#ff00ff', // botão alternativo
   textLight: '#ffffff', // texto claro
-  textDark: '#333333', 
+  textDark: '#333333', // texto escuro
   inputBackground: '#1a1a2e', // inputs escuros
-  inputText: '#00ffcc'
+  inputText: '#00ffcc' // texto dos inputs neon
 };
 
 export const fontFamily = "'Orbitron', sans-serif"; // fonte futurista
