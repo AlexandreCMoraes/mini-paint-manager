@@ -67,4 +67,37 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// PUT: atualizar miniaturadb
+// Checa se a miniatura existe antes de atualizar.
+// Validação de campos obrigatórios.
+// Retorna a miniatura atualizada.
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nomeDoPersonagem, universo, escala, material, marca, altura } = req.body;
+
+  // Validação básica de campos
+  if (!nomeDoPersonagem || !universo || !escala || !material || !marca || !altura) {
+    return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE miniaturas SET nome=$1, universo=$2, escala=$3, material=$4, marca=$5, altura=$6 WHERE id=$7 RETURNING *',
+      [nomeDoPersonagem, universo, escala, material, marca, altura, id]
+    );
+
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: 'Miniatura não encontrada' });
+    }
+    res.json({
+      message: 'Miniatura atualizada com sucesso',
+      updated: result.rows[0]
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao atualizar miniatura' });
+  }
+});
+
 module.exports = router;
