@@ -28,7 +28,6 @@ export const universoOptions = [
     "The Witcher",
     "Video-Game",
     "League of Legends",
-    "Pokemon",
     "Overwatch",
     // Animes e Tokusatsu
     "Anime",

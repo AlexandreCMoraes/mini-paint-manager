@@ -1,7 +1,7 @@
-// API Configuration 
+// API Configuration    
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-// Constantes de timeout 
+// Constantes de timeout para requisições e notificações
 export const REQUEST_TIMEOUT = 5000;
 export const NOTIFICATION_TIMEOUT = 5000;
 

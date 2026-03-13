@@ -91,14 +91,14 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
             </div>
 
             {/* BOTÕES EDITAR E DELETAR */}
-            <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end' }}>
+            {/* <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end' }}>
               <EditButton onClick={() => handleEditClick(m)}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered} />
               <DeleteButton id={m.id} onDelete={handleDelete}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered} />
-            </div>
+            </div> */}
           </li>
         ))}
       </ul>
@@ -176,7 +176,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
                 onChange={(e) => setEditFormData({ ...editFormData, altura: e.target.value })}
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
-              {/* Botões no final */}
+              {/* Botões das miniaturas cadastradas */}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                 <CancelButton onCancel={() => setOpen(false)}
                   isHovered={isHovered}
