@@ -1,60 +1,24 @@
-import { useEffect, useState } from 'react';
-import Header from './components/Header';
-import MiniaturaForm from './components/MiniaturaForm';
-import MiniaturaList from './components/MiniaturaList';
-import planoFundo from './img/plano-de-fundo-v2.jpeg';
-import ResponsiveAppBar from './components/AppBar';
-import { API_ENDPOINTS } from './config/api';
+// src/App.js
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Miniaturas from "./pages/Miniaturas"; // sua página do sistema
+import { ThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import theme from "./styles/theme"; // seu tema atual
 
 function App() {
-  const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
-
-  // Função para buscar miniaturas do backend e atualizar estado
-  const fetchMiniaturas = async () => {
-    try {
-      const res = await fetch(API_ENDPOINTS.MINIATURAS);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const data = await res.json();
-      setMiniaturas(data); // atualiza estado
-    } catch (error) {
-      console.error('Erro ao buscar miniaturas:', error);
-    }
-  };
-
-  useEffect(() => { fetchMiniaturas(); }, []); // roda apenas uma vez ao abrir app
-
-  // Função para adicionar nova miniatura na lista 
-  const handleAdd = (newMini) => {
-    setMiniaturas([...miniaturas, newMini]); // adiciona nova miniatura
-  };
-
-  // Quando deletar
-  const handleDelete = (id) => {
-    setMiniaturas(miniaturas.filter(m => m.id !== id));
-  };
-
-  // Quando atualizar
-  const handleUpdate = (updatedMini) => {
-    setMiniaturas(miniaturas.map(m => m.id === updatedMini.id ? updatedMini : m));
-  };
-
   return (
-
-    <div style={{
-      backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.5),
-     rgba(0, 0, 0, 0.8)), 
-     url(${planoFundo})`, backgroundSize: 'cover',
-      backgroundPosition: 'center', backgroundAttachment: 'fixed',
-      minHeight: '100vh', padding: '20px'
-    }}>
-
-      <ResponsiveAppBar />
-      <Header />
-      <MiniaturaForm onAdd={handleAdd} />
-      {/* <MiniaturaList miniaturas={miniaturas} /> */}
-      <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} />
-
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <Routes>
+          {/* Página principal do sistema */}
+          <Route path="/" element={<Miniaturas />} />
+          {/* Se quiser, qualquer rota desconhecida redireciona para Miniaturas */}
+          <Route path="*" element={<Miniaturas />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
