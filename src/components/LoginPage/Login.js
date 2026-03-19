@@ -3,9 +3,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import './Login.css';
 import FormUtils from './form-utils';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
+// Componente de Login que é a página de login do sistema, onde o usuário pode inserir suas 
+// credenciais para acessar o sistema. Ele utiliza o contexto de autenticação para gerenciar o 
+// estado do usuário e redirecionar para a página principal do sistema após um login bem-sucedido. 
+// O componente também inclui validação de formulário, animações e feedback visual para melhorar a 
+// experiência do usuário.
 const Login = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
+
 
     const formRef = useRef(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,7 +28,9 @@ const Login = () => {
         );
         FormUtils.addSharedAnimations();
     }, []);
-
+    // Função para validar os campos do formulário usando as funções de validação do FormUtils. 
+    // Ela é chamada tanto no evento onBlur dos inputs quanto na submissão do formulário para garantir 
+    // que os dados sejam válidos antes de tentar fazer o login.
     const validateField = (fieldName, value) => {
         const validators = {
             email: FormUtils.validateEmail,
@@ -31,7 +41,8 @@ const Login = () => {
         else FormUtils.showError(fieldName, result.message);
         return result.isValid;
     };
-
+    // Função para lidar com a submissão do formulário de login. Ela valida os campos, 
+    // simula um processo de login,
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return;
@@ -47,6 +58,7 @@ const Login = () => {
             await FormUtils.simulateLogin(email, password);
             setShowSuccess(true);
             navigate('/miniaturas'); // Redireciona para a página principal do sistema
+            login({ email }); // Atualiza o contexto de autenticação
             setTimeout(() => {
                 setShowSuccess(false);
                 if (formRef.current) {
@@ -60,7 +72,8 @@ const Login = () => {
         }
 
     };
-
+    // O componente retorna a estrutura JSX do formulário de login, incluindo os campos de email e senha,
+    // botões de login e opções de login social, além de mensagens de erro e sucesso para feedback visual.
     return (
         <div className="login-container-body">
             <div className="login-card">

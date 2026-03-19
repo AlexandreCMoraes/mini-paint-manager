@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext"; //  contexto de autenticação
 import Miniaturas from "./pages/Miniaturas"; //  página do sistema
 import Login from "./components/LoginPage/Login"; //  página de login 
 import { ThemeProvider } from "@mui/material/styles";
@@ -9,21 +10,23 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <Routes>
-          {/* Página de login */}
-          <Route path="/login" element={<Login />} />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Página de login */}
+            <Route path="/login" element={<Login />} />
 
-          {/* Página principal do sistema */}
-          <Route path="/miniaturas" element={<Miniaturas />} />
+            {/* Página principal do sistema */}
+            <Route path="/miniaturas" element={<Miniaturas />} />
 
-          {/* Redireciona / para /login */}
-          <Route path="/" element={<Navigate to="/login" />} />
+            {/* Redireciona / para /login */}
+            <Route path="/" element={<Navigate to="/login" />} />
 
-          {/* Se quiser, qualquer rota desconhecida redireciona para Miniaturas */}
-          <Route path="*" element={<Miniaturas />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Se quiser, qualquer rota desconhecida redireciona para Miniaturas */}
+            <Route path="*" element={<Miniaturas />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

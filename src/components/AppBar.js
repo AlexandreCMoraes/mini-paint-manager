@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -14,9 +16,13 @@ import MenuItem from '@mui/material/MenuItem';
 const pages = ['Perfil', 'Dashboard', 'Logout'];
 // const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
+
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -87,11 +93,31 @@ function ResponsiveAppBar() {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
-              {pages.map((page) => (
+              {/* {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
                   <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
                 </MenuItem>
-              ))}
+              ))} */}
+              <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                {pages.map((page) => (
+                  <Button
+                    key={page}
+                    // Se o item for "Logout", chama a função de logout e redireciona para login, caso 
+                    // contrário, apenas fecha o menu
+                    onClick={() => {
+                      if (page === 'Logout') {
+                        logout(); // limpa usuário do contexto e localStorage
+                        navigate('/login'); // redireciona para login
+                      } else {
+                        handleCloseNavMenu();
+                      }
+                    }}
+                    sx={{ my: 2, color: 'white', display: 'block' }}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </Box>
             </Menu>
           </Box>
           <PaletteIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
@@ -113,11 +139,29 @@ function ResponsiveAppBar() {
           >
             LOGO
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          {/* <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
                 key={page}
                 onClick={handleCloseNavMenu}
+                sx={{ my: 2, color: 'white', display: 'block' }}
+              >
+                {page}
+              </Button>
+            ))}
+          </Box> */}
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            {pages.map((page) => (
+              <Button
+                key={page}
+                onClick={() => {
+                  if (page === 'Logout') {
+                    logout(); // limpa usuário do contexto e localStorage
+                    navigate('/login'); // redireciona para login
+                  } else {
+                    handleCloseNavMenu();
+                  }
+                }}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
                 {page}
