@@ -19,6 +19,7 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
+    // useEffect para configurar as animações de entrada, os rótulos flutuantes e o toggle de senha
     useEffect(() => {
         FormUtils.addEntranceAnimation(document.querySelector('.login-card'));
         FormUtils.setupFloatingLabels(formRef.current);
@@ -28,6 +29,51 @@ const Login = () => {
         );
         FormUtils.addSharedAnimations();
     }, []);
+
+    // useEffect para inicializar o Google Identity Services e renderizar o botão de login do Google.
+    // useEffect(() => {
+    //     // Inicializa o Google Identity Services
+    //     if (window.google) {
+    //         window.google.accounts.id.initialize({
+    //             client_id: "SEU_CLIENT_ID_GOOGLE.apps.googleusercontent.com", // ALTERAÇÃO: coloque seu client ID
+    //             callback: handleGoogleResponse,
+    //         });
+    //         window.google.accounts.id.renderButton(
+    //             document.getElementById("googleSignInDiv"),
+    //             { theme: "outline", size: "large" }
+    //         );
+    //     }
+    // }, []);
+
+    useEffect(() => {
+        // Espera até window.google existir
+        const interval = setInterval(() => {
+            if (window.google) {
+                clearInterval(interval);
+
+                window.google.accounts.id.initialize({
+                    client_id: "SEU_CLIENT_ID_GOOGLE.apps.googleusercontent.com", // coloque seu Client ID
+                    callback: handleGoogleResponse,
+                });
+
+                window.google.accounts.id.renderButton(
+                    document.getElementById("googleSignInDiv"),
+                    { theme: "outline", size: "large" }
+                );
+            }
+        }, 100);
+    }, []);
+
+
+    // Função que inicia o login do Google quando o botão estilizado é clicado
+    const handleGoogleLogin = () => {
+        if (window.google) {
+            window.google.accounts.id.prompt(); // abre o popup do Google
+        } else {
+            console.error("Google Identity Services não carregou ainda");
+        }
+    };
+
     // Função para validar os campos do formulário usando as funções de validação do FormUtils. 
     // Ela é chamada tanto no evento onBlur dos inputs quanto na submissão do formulário para garantir 
     // que os dados sejam válidos antes de tentar fazer o login.
@@ -72,6 +118,16 @@ const Login = () => {
         }
 
     };
+
+    // Callback quando o usuário loga com Google
+    const handleGoogleResponse = (response) => {
+        const decodedUser = JSON.parse(atob(response.credential.split('.')[1]));
+        console.log("Google User:", decodedUser); // só para conferir no console
+
+        login({ email: decodedUser.email, name: decodedUser.name }); // Atualiza contexto
+        navigate('/miniaturas'); // Redireciona para a página principal
+    };
+
     // O componente retorna a estrutura JSX do formulário de login, incluindo os campos de email e senha,
     // botões de login e opções de login social, além de mensagens de erro e sucesso para feedback visual.
     return (
@@ -145,16 +201,22 @@ const Login = () => {
                 <div className="divider">
                     <span>or continue with</span>
                 </div>
-
+                {/* Botao estilizado */}
                 <div className="social-login">
-                    <button type="button" className="social-btn google-btn">
+                    <button type="button" className="social-btn google-btn"
+                        onClick={handleGoogleLogin}>
                         <span className="social-icon google-icon"></span>
                         Google
                     </button>
-                    <button type="button" className="social-btn github-btn">
+
+                    {/* Google Sign-In será renderizado aqui */}
+                    {/* <div id="googleSignInDiv"></div> */}
+                    {/* ALTERAÇÃO: o botão oficial do Google será inserido aqui */}
+
+                    {/* <button type="button" className="social-btn github-btn">
                         <span className="social-icon github-icon"></span>
                         GitHub
-                    </button>
+                    </button> */}
                 </div>
 
                 <div className="signup-link">
