@@ -33,7 +33,13 @@ export default function MiniaturaForm({ onAdd }) {
   const handleChange = (e) => handleInputChange(e, formData, setFormData);
 
   // Função de envio
-  const handleSubmit = (e) => handleSubmitMiniatura(e, formData, onAdd, setMensagemSucesso, setMensagemErro, setFormData, INITIAL_FORM_STATE);
+  const handleSubmit = (e) => handleSubmitMiniatura(e,
+    formData,
+    onAdd,
+    setMensagemSucesso,
+    setMensagemErro,
+    setFormData,
+    INITIAL_FORM_STATE);
 
   // Render
   return (
@@ -101,7 +107,8 @@ export default function MiniaturaForm({ onAdd }) {
         onChange={handleChange}
         list="escalas"
         style={inputStyle}
-        title="A escala indica o tamanho da miniatura em relação ao objeto real, por exemplo 1:12 significa 1/12 do tamanho real."
+        title="A escala indica o tamanho da miniatura em relação ao objeto real, por exemplo 1:12 
+        significa 1/12 do tamanho real."
       />
       <datalist id="escalas">
         {escalasOptions.map((escala, index) => (
@@ -117,7 +124,8 @@ export default function MiniaturaForm({ onAdd }) {
         onChange={handleChange}
         list="materiais"
         style={inputStyle}
-        title="O material indica o tipo de substância usada para criar a miniatura, por exemplo plástico ou resina."
+        title="O material indica o tipo de substância usada para criar a miniatura, por exemplo 
+        plástico ou resina."
 
       />
       <datalist id="materiais">
@@ -134,7 +142,8 @@ export default function MiniaturaForm({ onAdd }) {
         onChange={handleChange}
         list="marcas"
         style={inputStyle}
-        title='A marca indica o fabricante do material usado para criar a miniatura, por exemplo "Elegoo" ou "Anycubic".'
+        title='A marca indica o fabricante do material usado para criar a miniatura, por exemplo 
+        "Elegoo" ou "Anycubic".'
       />
       <datalist id="marcas">
         {marcasOptions.map((marca, index) => (
@@ -150,7 +159,8 @@ export default function MiniaturaForm({ onAdd }) {
         value={formData.altura}
         onChange={handleChange}
         style={inputStyle}
-        title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" para uma miniatura de 15 cm de altura.'
+        title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" 
+        para uma miniatura de 15 cm de altura.'
       />
       {/* Botao add miniatura form */}
       <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} />
