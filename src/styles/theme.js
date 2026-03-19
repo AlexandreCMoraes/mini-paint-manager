@@ -7,10 +7,9 @@
 //   inputBackground: '#1a1a2e', // inputs escuros
 //   inputText: '#00ffcc' // texto dos inputs neon
 // };
-
 // export const fontFamily = "'Orbitron', sans-serif"; // fonte futurista
 
-// src/styles/theme.js
+
 import { createTheme } from "@mui/material/styles";
 
 export const colors = {
