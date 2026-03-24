@@ -1,4 +1,3 @@
-// src/components/Login/Login.js
 import React, { useEffect, useRef, useState } from 'react';
 import './Login.css';
 import FormUtils from './form-utils';
@@ -13,6 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 const Login = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
 
 
     const formRef = useRef(null);
@@ -29,6 +29,18 @@ const Login = () => {
         );
         FormUtils.addSharedAnimations();
     }, []);
+
+    // useEffect para configurar o toggle de visibilidade da senha, adicionando um event 
+    // listener ao botão de toggle.
+    // useEffect(() => {
+    //     const passwordInput = document.getElementById('password');
+    //     const toggleBtn = document.getElementById('passwordToggle');
+    //     toggleBtn.addEventListener('click', () => {
+    //         const isPassword = passwordInput.type === 'password';
+    //         passwordInput.type = isPassword ? 'text' : 'password';
+    //         toggleBtn.querySelector('.eye-icon').classList.toggle('show-password', isPassword);
+    //     });
+    // }, []);
 
     // useEffect para inicializar o Google Identity Services e renderizar o botão de login do Google.
     // useEffect(() => {
@@ -64,7 +76,6 @@ const Login = () => {
         }, 100);
     }, []);
 
-
     // Função que inicia o login do Google quando o botão estilizado é clicado
     const handleGoogleLogin = () => {
         if (window.google) {
@@ -79,6 +90,10 @@ const Login = () => {
     // que os dados sejam válidos antes de tentar fazer o login.
     const validateField = (fieldName, value) => {
         const validators = {
+            username: FormUtils.validateUsername || ((v) => ({
+                isValid: v.trim() !== '',
+                message: 'Username required'
+            })),
             email: FormUtils.validateEmail,
             password: FormUtils.validatePassword
         };
@@ -139,6 +154,25 @@ const Login = () => {
                 </div>
 
                 <form ref={formRef} className="login-form" onSubmit={handleSubmit} noValidate>
+
+                    {/* form de user */}
+                    <div className="form-group">
+                        <div className="input-wrapper">
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                required
+                                autoComplete="username"
+                                onBlur={(e) => validateField('username', e.target.value)}
+                            />
+                            <label htmlFor="username">User</label>
+                            <span className="focus-border"></span>
+                        </div>
+                        <span className="error-message" id="usernameError"></span>
+                    </div>
+
+                    {/* form de email */}
                     <div className="form-group">
                         <div className="input-wrapper">
                             <input
@@ -155,10 +189,12 @@ const Login = () => {
                         <span className="error-message" id="emailError"></span>
                     </div>
 
+                    {/* form de senha */}
                     <div className="form-group">
                         <div className="input-wrapper password-wrapper">
                             <input
-                                type="password"
+                                // type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 id="password"
                                 name="password"
                                 required
@@ -171,8 +207,10 @@ const Login = () => {
                                 className="password-toggle"
                                 id="passwordToggle"
                                 aria-label="Toggle password visibility"
+                                onClick={() => setShowPassword(prev => !prev)}
                             >
-                                <span className="eye-icon"></span>
+                                <span className={`eye-icon ${showPassword ? 'show-password' : ''}`}></span>
+
                             </button>
                             <span className="focus-border"></span>
                         </div>
@@ -198,9 +236,10 @@ const Login = () => {
                     </button>
                 </form>
 
-                <div className="divider">
+                {/* <div className="divider">
                     <span>or continue with</span>
-                </div>
+                </div> */}
+
                 {/* Botao estilizado */}
                 <div className="social-login">
                     {/* <button type="button" className="social-btn google-btn"

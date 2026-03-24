@@ -167,7 +167,9 @@
 
 /* Loading State */
 .btn.loading {
-    pointer-events: none;
+    /* pointer-events: none; */
+    cursor: not-allowed;
+    opacity: 0.8;
 }
 
 .btn-text {
@@ -609,5 +611,9 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 16px;
+    }
+    .input-wrapper input {
+        padding: 14px 14px 6px 14px;
+        font-size: 15px;
     }
 }
