@@ -56,10 +56,10 @@ const Login = () => {
                     callback: handleGoogleResponse,
                 });
 
-                window.google.accounts.id.renderButton(
-                    document.getElementById("googleSignInDiv"),
-                    { theme: "outline", size: "large" }
-                );
+                // window.google.accounts.id.renderButton(
+                //     document.getElementById("googleSignInDiv"),
+                //     { theme: "outline", size: "large" }
+                // );
             }
         }, 100);
     }, []);
@@ -203,11 +203,11 @@ const Login = () => {
                 </div>
                 {/* Botao estilizado */}
                 <div className="social-login">
-                    <button type="button" className="social-btn google-btn"
+                    {/* <button type="button" className="social-btn google-btn"
                         onClick={handleGoogleLogin}>
                         <span className="social-icon google-icon"></span>
                         Google
-                    </button>
+                    </button> */}
 
                     {/* Google Sign-In será renderizado aqui */}
                     {/* <div id="googleSignInDiv"></div> */}

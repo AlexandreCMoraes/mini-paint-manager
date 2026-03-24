@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css?family=Audiowide&display=swap');
+
+.notfound-container {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(circle, #240015 0%, #12000b 100%);
+}
+
+.notfound-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.svgWrap {
+  position: absolute;
+  width: 600px;
+  max-width: 100%;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.glow {
+  stroke: #ff005d;
+  stroke-width: 3px;
+  fill: transparent;
+  filter: url(#glow);
+}
+
+.glow-dark {
+  stroke: #12000a;
+  stroke-width: 3px;
+  fill: transparent;
+  filter: url(#glow);
+}
+
+.id1 {
+  stroke-dasharray: 940px;
+  stroke-dashoffset: -940px;
+  animation: drawLine1 2.5s ease-in-out forwards;
+}
+.id2 {
+  stroke-dasharray: 735px;
+  stroke-dashoffset: -735px;
+  animation: drawLine2 2.5s ease-in-out forwards;
+}
+.id3 {
+  stroke-dasharray: 940px;
+  stroke-dashoffset: -940px;
+  animation: drawLine3 2.5s ease-in-out forwards;
+}
+
+@keyframes drawLine1 { 0% {stroke-dashoffset: -940px;} 100% {stroke-dashoffset:0;} }
+@keyframes drawLine2 { 0% {stroke-dashoffset: -735px;} 100% {stroke-dashoffset:0;} }
+@keyframes drawLine3 { 0% {stroke-dashoffset: -940px;} 100% {stroke-dashoffset:0;} }
+
+.notfound-container h2 {
+  position: absolute;
+  top: 65%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  color: #ff005d;
+  font-family: "Audiowide", sans-serif;
+}
+
+.back-login {
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ff005d;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.back-login:hover {
+  text-decoration: underline;
+}
