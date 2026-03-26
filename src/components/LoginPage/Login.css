@@ -105,7 +105,7 @@
 /* Error States */
 .error-message {
     display: block;
-    color: #940e0e;
+    color: #ff0000;
     font-size: 12px;
     font-weight: 500;
     margin-top: 6px;
@@ -113,7 +113,7 @@
     opacity: 0;
     transform: translateY(-10px);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(85, 83, 83, 0.1);
     padding: 4px 8px;
     border-radius: 6px;
     backdrop-filter: blur(10px);

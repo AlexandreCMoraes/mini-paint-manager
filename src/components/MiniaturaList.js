@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useEffect } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
@@ -11,6 +11,8 @@ import Box from '@mui/material/Box';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturasActions';
+// Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
+// consistência e facilitar futuras atualizações
 import {
   marcasOptions,
   universoOptions,
@@ -32,8 +34,17 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // Estados para paginação
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
+  // Referência para o componente de paginação, caso seja necessário manipular diretamente 
+  // (ex: resetar para a página 1 após uma ação)
+  const paginationRef = useRef(null);
+  // Estado para marcar se houve um delete, utilizado para acionar o useEffect que ajusta a 
+  // página atual após deletar itens
+  const [deleted, setDeleted] = useState(false);
   // Handle para deletar miniatura
-  const handleDelete = (id) => handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
+  const handleDelete = (id) => {
+    handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
+    setDeleted(true);// marca que houve um delete
+  };
 
   // clicar em editar abre modal
   const handleEditClick = (mini) => {
@@ -51,9 +62,20 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // Garantir que a página atual seja válida mesmo após deletar itens (ex: se estiver na página 3 e 
   // deletar itens que reduzem o total para 2 páginas, volta para a página 2)
   useEffect(() => {
+    if (!deleted) return; // só continua se for um delete (estava acionando o use effect ao dar f5 antes)
+
     const totalPages = Math.ceil(miniaturas.length / itemsPerPage);
     if (page > totalPages) {
-      setPage(totalPages > 0 ? totalPages : 1);
+      const newPage = totalPages > 0 ? totalPages : 1;
+      setPage(newPage);
+
+      // Scroll suave para o componente de paginação após ajustar a página
+      setTimeout(() => {
+        paginationRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 300);
     }
   }, [miniaturas, page]);
 
@@ -67,8 +89,11 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // Lógica de paginação - inverte a ordem das miniaturas para mostrar as mais recentes primeiro e 
   // depois aplica a lógica de paginação
   const miniaturasOrdenadas = miniaturas.slice().reverse();
+  // Cálculo dos índices para a paginação
   const indexOfLastItem = page * itemsPerPage;
+  // O índice do primeiro item é calculado subtraindo o número de itens por página do índice do último item
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  // O array de miniaturas é fatiado para obter apenas os itens que devem ser exibidos na página atual
   const currentItems = miniaturasOrdenadas.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
@@ -134,8 +159,11 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         ))}
       </ul>
 
-      {/* Paginação  */}
-      <Stack spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
+      {/* Paginação */}
+      <Stack ref={paginationRef}
+        spacing={2}
+        alignItems="center"
+        style={{ marginTop: '20px' }}>
         <Pagination
           count={Math.ceil(miniaturas.length / itemsPerPage)}
           page={page}
