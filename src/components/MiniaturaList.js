@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useEffect } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
 import DeleteButton from './Buttons/DeleteButton';
@@ -7,6 +8,8 @@ import CancelButton from './Buttons/CancelButton';
 import AddButton from './Buttons/AddButton';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturasActions';
 import {
   marcasOptions,
@@ -26,6 +29,9 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   const [severidade, setSeveridade] = useState('success');
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [mensagemErro, setMensagemErro] = useState('');
+  // Estados para paginação
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 5;
   // Handle para deletar miniatura
   const handleDelete = (id) => handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
 
@@ -42,6 +48,14 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
     });
     setOpen(true);
   };
+  // Garantir que a página atual seja válida mesmo após deletar itens (ex: se estiver na página 3 e 
+  // deletar itens que reduzem o total para 2 páginas, volta para a página 2)
+  useEffect(() => {
+    const totalPages = Math.ceil(miniaturas.length / itemsPerPage);
+    if (page > totalPages) {
+      setPage(totalPages > 0 ? totalPages : 1);
+    }
+  }, [miniaturas, page]);
 
   // salvar edição
   const handleSave = (e) => handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen, setSeveridade);
@@ -50,6 +64,12 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // Validação especial para escala para colocar apenas números e ":" (para escalas como 1:24)
   // A mesma logica utilizada no cadastro é aplicada aqui
   const handleChange = (e) => handleInputChange(e, editFormData, setEditFormData);
+  // Lógica de paginação - inverte a ordem das miniaturas para mostrar as mais recentes primeiro e 
+  // depois aplica a lógica de paginação
+  const miniaturasOrdenadas = miniaturas.slice().reverse();
+  const indexOfLastItem = page * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = miniaturasOrdenadas.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div style={{ marginTop: '20px', fontFamily }}>
@@ -78,7 +98,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         textShadow: '0 0 5px #00ffcc'
       }}>Miniaturas Cadastradas</h2>
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {miniaturas.slice().reverse().map(m => (
+        {currentItems.map(m => (
           <li key={m.id} style={{
             background: 'rgba(26, 26, 46, 0.8)',
             color: colors.textLight,
@@ -113,6 +133,17 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
           </li>
         ))}
       </ul>
+
+      {/* Paginação  */}
+      <Stack spacing={2} alignItems="center" style={{ marginTop: '20px' }}>
+        <Pagination
+          count={Math.ceil(miniaturas.length / itemsPerPage)}
+          page={page}
+          onChange={(event, value) => setPage(value)}
+          shape="rounded"
+          color="primary"
+        />
+      </Stack>
 
       {/* modal de edição simples */}
       <Modal
