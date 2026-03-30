@@ -1,11 +1,12 @@
+// Esse arquivo é o roteador Express que fala com o banco PostgreSQL. Aqui está o que cada rota faz e 
+// como ela se conecta com o frontend 
 const express = require('express');
 const router = express.Router();
 const path = require('path');
 const pool = require('../db');
 
-
 // Caminho do JSON
-const dataPath = path.join(__dirname, '../data/miniaturas.json');
+// const dataPath = path.join(__dirname, '../data/miniaturas.json');
 
 // GET: listar miniaturasdb
 // Retornar status code (200 por padrão está ok).
@@ -17,6 +18,28 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Erro ao listar miniaturas' });
+  }
+});
+
+// GET: buscar miniaturas por nome do personagem- endpoint de busca simples
+// TODO GET: buscar miniaturas por qualquer campo- endpoint de busca flexível
+router.get('/search', async (req, res) => {
+  const { search } = req.query;
+
+  try {
+    if (!search || search.trim() === '') {
+      return res.json([]); // retorna vazio se nada digitado
+    }
+
+    // Busca apenas por nome do personagem, case-insensitive, prefix-based.
+    const query = `SELECT * FROM miniaturas WHERE LOWER(nome) LIKE LOWER($1) ORDER BY id ASC`;
+    const params = [`${search}%`];
+    const result = await pool.query(query, params);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Erro ao buscar miniaturas' });
   }
 });
 
