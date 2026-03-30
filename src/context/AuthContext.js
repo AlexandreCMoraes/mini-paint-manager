@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext } from 'react';
 
-// Cria o contexto
+// Cria o contexto de autenticação
 const AuthContext = createContext();
 
 // Provider que envolve o app App.js
