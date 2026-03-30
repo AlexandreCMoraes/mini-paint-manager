@@ -34,10 +34,11 @@ export const handleEditMiniatura = (miniatura) => {
 export const handleInputChange = (e, formData, setFormData) => {
     const { name, value } = e.target;
 
-    // Validação especial para escala para colocar apenas números e ":" (para escalas como 1:24)
+    // Validação especial para escala: permite somente dígitos e ':' durante a digitação
+    // e valida no submit para garantir formato completo (ex: 1:12, 1:24, 2:30)
     if (name === 'escala') {
         if (value !== '' && value !== 'N/A' && !/^[\d:]*$/.test(value)) {
-            return; // Não aceita valores inválidos
+            return; // Não aceita caracteres fora de dígitos e ':'
         }
     }
 
@@ -63,6 +64,14 @@ export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSuces
     if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala ||
         !formData.material || !formData.altura || !formData.marca) {
         setMensagemErro("Por favor, preencha todos os campos antes de adicionar a miniatura!");
+        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
+        return;
+    }
+
+    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24)
+    const escalaPattern = /^\d+:\d+$/;
+    if (!escalaPattern.test(formData.escala)) {
+        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc.');
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
@@ -117,6 +126,14 @@ export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagem
     if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala ||
         !formData.material || !formData.altura || !formData.marca) {
         setMensagemErro("Por favor, preencha todos os campos antes de salvar a miniatura!");
+        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
+        return;
+    }
+
+    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24)
+    const escalaPattern = /^\d+:\d+$/;
+    if (!escalaPattern.test(formData.escala)) {
+        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc.');
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
