@@ -14,9 +14,10 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 
 const pages = ['Perfil', 'Dashboard', 'Logout'];
-// const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
-
-
+// O componente AppBar é responsável por renderizar a barra de navegação no topo da aplicação. Ele utiliza o 
+// Material-UI para criar uma barra responsiva que se adapta a diferentes tamanhos de tela. O componente 
+// também integra a funcionalidade de logout, permitindo que o usuário saia da aplicação e seja 
+// redirecionado para a página de login.
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);

@@ -10,6 +10,8 @@ import {
   escalasOptions,
   materiaisOptions
 } from '../data/formOptions';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
 
 // Estado inicial do formulário
 const INITIAL_FORM_STATE = {
@@ -72,99 +74,113 @@ export default function MiniaturaForm({ onAdd }) {
         severity="warning"
         onClose={() => setMensagemErro('')}
       />
-      {/* Input para o nome do personagem */}
-      <input
-        id="nomeDoPersonagem"
-        name="nomeDoPersonagem"
-        placeholder="Nome do Personagem"
-        value={formData.nomeDoPersonagem}
-        onChange={handleChange}
-        style={inputStyle}
-        title='O nome do personagem é o nome da miniatura, por exemplo "Homem-Aranha" ou "Master Chief".'
-      />
-      {/* Input para o universo */}
-      <input
-        id="universo"
-        name="universo"
-        placeholder="Universo (Marvel, DC, Video-Game, etc)"
-        value={formData.universo}
-        onChange={handleChange}
-        list="universos"
-        style={inputStyle}
-        title='O universo indica a origem do personagem, por exemplo "Marvel", "DC", ou "Video-Game".'
-      />
-      <datalist id="universos">
-        {universoOptions.map((universo, index) => (
-          <option key={index} value={universo} />
-        ))}
-      </datalist>
-      {/* Input para a escala */}
-      <input
-        id="escala"
-        name="escala"
-        placeholder="Escala (1:12, 1:24, etc)"
-        value={formData.escala}
-        onChange={handleChange}
-        list="escalas"
-        style={inputStyle}
-        title="A escala indica o tamanho da miniatura em relação ao objeto real, por exemplo 1:12 
-        significa 1/12 do tamanho real."
-      />
-      <datalist id="escalas">
-        {escalasOptions.map((escala, index) => (
-          <option key={index} value={escala} />
-        ))}
-      </datalist>
-      {/* Input para o material */}
-      <input
-        id="material"
-        name="material"
-        placeholder="Material (Plástico, Resina, etc)"
-        value={formData.material}
-        onChange={handleChange}
-        list="materiais"
-        style={inputStyle}
-        title="O material indica o tipo de substância usada para criar a miniatura, por exemplo 
+
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          background: 'rgba(26, 26, 46, 0.8)',
+          padding: '20px',
+          borderRadius: '10px',
+        }}
+      >
+
+        {/* Input para o nome do personagem */}
+        <input
+          id="nomeDoPersonagem"
+          name="nomeDoPersonagem"
+          placeholder="Nome do Personagem"
+          // label="Nome do Personagem"
+          value={formData.nomeDoPersonagem}
+          onChange={handleChange}
+          style={inputStyle}
+          title='O nome do personagem é o nome da miniatura, por exemplo "Homem-Aranha" ou "Master Chief".'
+        />
+        {/* Input para o universo */}
+        <input
+          id="universo"
+          name="universo"
+          placeholder="Universo (Marvel, DC, Video-Game, etc)"
+          value={formData.universo}
+          onChange={handleChange}
+          list="universos"
+          style={inputStyle}
+          title='O universo indica a origem do personagem, por exemplo "Marvel", "DC", ou "Video-Game".'
+        />
+        <datalist id="universos">
+          {universoOptions.map((universo, index) => (
+            <option key={index} value={universo} />
+          ))}
+        </datalist>
+        {/* Input para a escala */}
+        <input
+          id="escala"
+          name="escala"
+          placeholder="Escala (1:12, 1:24, etc)"
+          value={formData.escala}
+          onChange={handleChange}
+          pattern="^\d+:\d+$"
+          list="escalas"
+          style={inputStyle}
+          title="A escala deve ser do formato 1:12, 1:24, etc (número:número). 
+          Indica o tamanho da miniatura em relação ao objeto real"
+        />
+        <datalist id="escalas">
+          {escalasOptions.map((escala, index) => (
+            <option key={index} value={escala} />
+          ))}
+        </datalist>
+        {/* Input para o material */}
+        <input
+          id="material"
+          name="material"
+          placeholder="Material (Plástico, Resina, etc)"
+          value={formData.material}
+          onChange={handleChange}
+          list="materiais"
+          style={inputStyle}
+          title="O material indica o tipo de substância usada para criar a miniatura, por exemplo 
         plástico ou resina."
 
-      />
-      <datalist id="materiais">
-        {materiaisOptions.map((mat, index) => (
-          <option key={index} value={mat} />
-        ))}
-      </datalist>
-      {/* Input para a marca da resina/filamento */}
-      <input
-        id="marca"
-        name="marca"
-        placeholder="Marca da Resina/Filamento"
-        value={formData.marca}
-        onChange={handleChange}
-        list="marcas"
-        style={inputStyle}
-        title='A marca indica o fabricante do material usado para criar a miniatura, por exemplo 
+        />
+        <datalist id="materiais">
+          {materiaisOptions.map((mat, index) => (
+            <option key={index} value={mat} />
+          ))}
+        </datalist>
+        {/* Input para a marca da resina/filamento */}
+        <input
+          id="marca"
+          name="marca"
+          placeholder="Marca da Resina/Filamento"
+          value={formData.marca}
+          onChange={handleChange}
+          list="marcas"
+          style={inputStyle}
+          title='A marca indica o fabricante do material usado para criar a miniatura, por exemplo 
         "Elegoo" ou "Anycubic".'
-      />
-      <datalist id="marcas">
-        {marcasOptions.map((marca, index) => (
-          <option key={index} value={marca} />
-        ))}
-      </datalist>
-      {/* Input para a altura */}
-      <input
-        id="altura"
-        name="altura"
-        placeholder="Altura (cm)"
-        type="number"
-        value={formData.altura}
-        onChange={handleChange}
-        style={inputStyle}
-        title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" 
+        />
+        <datalist id="marcas">
+          {marcasOptions.map((marca, index) => (
+            <option key={index} value={marca} />
+          ))}
+        </datalist>
+        {/* Input para a altura */}
+        <input
+          id="altura"
+          name="altura"
+          placeholder="Altura (cm)"
+          type="number"
+          value={formData.altura}
+          onChange={handleChange}
+          style={inputStyle}
+          title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" 
         para uma miniatura de 15 cm de altura.'
-      />
-      {/* Botao add miniatura form */}
-      <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} />
-
+        />
+        {/* Botao add miniatura form */}
+        <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} />
+      </Box>
     </form>
   );
 }
