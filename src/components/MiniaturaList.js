@@ -1,5 +1,4 @@
-import { useState, useRef } from 'react';
-import { useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
 import DeleteButton from './Buttons/DeleteButton';
@@ -10,7 +9,10 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturasActions';
+import { API_ENDPOINTS } from '../config/api';
+
 // Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
 // consistência e facilitar futuras atualizações
 import {
@@ -19,6 +21,7 @@ import {
   escalasOptions,
   materiaisOptions
 } from '../data/formOptions';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // Estados para modal de edição da miniatura
@@ -26,14 +29,16 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   const [selectedMiniatura, setSelectedMiniatura] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [isHovered, setIsHovered] = useState(false);
+
   // Estados para notificações
   const [mensagemDelete, setMensagemDelete] = useState('');
   const [severidade, setSeveridade] = useState('success');
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [mensagemErro, setMensagemErro] = useState('');
+
   // Estados para paginação
   const [page, setPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   // Referência para o componente de paginação, caso seja necessário manipular diretamente 
   // (ex: resetar para a página 1 após uma ação)
   const paginationRef = useRef(null);
@@ -41,6 +46,12 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // página atual após deletar itens
   const [deleted, setDeleted] = useState(false);
   // Handle para deletar miniatura
+
+  // Estados de busca e resultados da busca para filtrar a lista de miniaturas exibida conforme o 
+  // usuário digita.
+  const [searchValue, setSearchValue] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+
   const handleDelete = (id) => {
     handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
     setDeleted(true);// marca que houve um delete
@@ -77,6 +88,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         });
       }, 300);
     }
+    // setDeleted(false); // resetar flag
   }, [miniaturas, page]);
 
   // salvar edição
@@ -95,6 +107,50 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   // O array de miniaturas é fatiado para obter apenas os itens que devem ser exibidos na página atual
   const currentItems = miniaturasOrdenadas.slice(indexOfFirstItem, indexOfLastItem);
+
+  // se tiver busca, usa bord results, senão usa paginação
+  const listToRender = searchValue.trim().length > 0 ? searchResults : currentItems;
+
+  // Título da página que muda dinamicamente conforme o valor do input de busca e os resultados 
+  // encontrados, para dar um feedback visual ao usuário sobre o que está sendo exibido
+  const pageTitle = searchValue.trim().length > 0
+    ? (searchResults.length > 0 ? 'Miniaturas encontradas' : 'Nenhuma miniatura encontrada')
+    : 'Miniaturas Cadastradas';
+
+  // Busca por nome do personagem
+  useEffect(() => {
+    if (!searchValue.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    // Função para buscar resultados no backend usando o endpoint de busca 
+    // simples, que retorna miniaturas
+    const fetchResults = async () => {
+      try {
+        // Busca no backend usando o endpoint de busca simples, que retorna miniaturas
+        const response = await fetch(`${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchValue)}`);
+        if (!response.ok) {
+          throw new Error(`HTTP status ${response.status}`);
+        }
+        const data = await response.json();
+        setSearchResults(data);
+      } catch (err) {
+        console.error('Erro na busca:', err);
+        setSearchResults([]);
+      }
+    };
+    // Debounce para evitar muitas requisições ao backend enquanto o usuário digita, só busca após 300ms
+    const delayDebounce = setTimeout(fetchResults, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchValue]);
+
+  // Limpar busca
+  const clearSearch = () => {
+    setSearchValue('');
+    setSearchResults([]);
+  };
+  // Lista a renderizar: resultados de busca ou itens da página atual
+  // const listToRender = searchValue.trim() ? searchResults : currentItems;
 
   return (
     <div style={{ marginTop: '20px', fontFamily }}>
@@ -116,14 +172,85 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         duration={5000}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
+      {/* Busca autocomplete somente por nomes */}
+      {/*TODO Fazer Busca autocomplete por outros campos */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        marginBottom: '15px'
+      }}>
+        <label style={{
+          marginBottom: '5px',
+          fontWeight: 'bold',
+          color: colors.primaryButton
+        }}>Buscar Miniaturas:</label>
+        <div style={{ display: 'flex', gap: '5px' }}>
+
+          <input
+            type="text"
+            // placeholder=""
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            style={{
+              padding: '8px',
+              width: '300px',
+              borderRadius: '6px',
+              border: `1px solid ${colors.primaryButton}`,
+              background: 'rgba(26,26,46,0.8)',
+              color: colors.textLight
+            }}
+          />
+          <button
+            onClick={clearSearch}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              border: 'none',
+              background: colors.primaryButton,
+              color: '#000',
+              cursor: 'pointer'
+            }}
+          >
+            X
+          </button></div>
+
+        {/* Lista de sugestões autocomplete */}
+        {searchResults.length > 0 && (
+          <div style={{
+            marginTop: '5px',
+            width: '300px',
+            background: 'rgba(0,0,0,0.85)',
+            color: colors.textLight,
+            borderRadius: '6px',
+            boxShadow: '0 0 8px #00ffcc',
+            maxHeight: '200px',
+            overflowY: 'auto',
+            padding: '5px'
+          }}>
+            {searchResults.map((res) => (
+              <div key={res.id} style={{ borderBottom: '1px solid #00ffcc', padding: '5px 0' }}>
+                <div><strong>Nome:</strong> {res.nome}</div>
+                <div><strong>Universo:</strong> {res.universo}</div>
+                <div><strong>Escala:</strong> {res.escala}</div>
+                <div><strong>Material:</strong> {res.material}</div>
+                <div><strong>Marca:</strong> {res.marca}</div>
+                <div><strong>Altura:</strong> {res.altura} cm</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <h2 style={{
         color: colors.primaryButton,
         textAlign: 'center',
-        textShadow: '0 0 5px #00ffcc'
-      }}>Miniaturas Cadastradas</h2>
+        textShadow: '0 0 5px #00ffcc',
+        marginBottom: '20px'
+      }}>{pageTitle}</h2>
+
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {currentItems.map(m => (
+        {listToRender.map(m => (
           <li key={m.id} style={{
             background: 'rgba(26, 26, 46, 0.8)',
             color: colors.textLight,
@@ -233,7 +360,10 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
                 value={editFormData.escala || ''}
                 onChange={handleChange}
                 list="escalas"
+                pattern="^\d+:\d+$"
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                title="A escala deve ser do formato 1:12, 1:24, etc (número:número). Indica o tamanho da 
+                miniatura em relação ao objeto real"
               />
               <datalist id="escalas">
                 {escalasOptions.map((escala, index) => (
