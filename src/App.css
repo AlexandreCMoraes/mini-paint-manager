@@ -1,2 +1,107 @@
-/* Estilos específicos da aplicação serão adicionados aqui conforme necessário */
+:root {
+  --bg-color: #0a0f2a;
+  --surface: rgba(26, 26, 46, 0.88);
+  --text: #f5f7ff;
+  --accent: #00ffcc;
+  --shadow: 0 0 12px rgba(0, 255, 204, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(135deg, #0f0f2b 0%, #090d1f 40%, #05080f 100%);
+  color: var(--text);
+}
+
+.page-shell {
+  min-height: 100vh;
+  padding: clamp(0.8rem, 2vw, 2rem);
+  margin: 0 auto;
+  width: min(1200px, 100%);
+  background-image: none;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.page-shell .surface {
+  width: 100%;
+  background: var(--surface);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+}
+
+.miniatura-form,
+.miniatura-list {
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+.miniatura-form input,
+.miniatura-form select,
+.miniatura-form textarea,
+.miniatura-list input {
+  width: 100%;
+  max-width: 100%;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
+}
+
+.miniatura-list .item-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: clamp(0.75rem, 1.5vw, 1rem);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 204, 0.4);
+  background: rgba(26, 26, 46, 0.85);
+  box-shadow: var(--shadow);
+}
+
+.miniatura-list .item-meta {
+  min-width: 240px;
+  flex: 1 1 260px;
+}
+
+.miniatura-list .item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .page-shell {
+    padding: clamp(0.8rem, 3vw, 1.25rem);
+  }
+
+  .miniatura-list .item-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .miniatura-list .item-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .css-1a79h8z-MuiFormControl-root, .miniatura-form .MuiInputBase-root {
+    width: 100% !important;
+  }
+
+  .page-shell {
+    padding: 1rem;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-size: clamp(1rem, 5vw, 1.5rem);
+  }
+}
+
 
