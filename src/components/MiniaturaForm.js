@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
 import AddButton from './Buttons/AddButton';
-import { NOTIFICATION_TIMEOUT } from '../config/api';
 import { handleInputChange, handleSubmitMiniatura } from '../actions/miniaturasActions';
 import {
   marcasOptions,
@@ -10,7 +9,6 @@ import {
   escalasOptions,
   materiaisOptions
 } from '../data/formOptions';
-import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 
 // Estado inicial do formulário
@@ -46,6 +44,7 @@ export default function MiniaturaForm({ onAdd }) {
   // Render
   return (
     <form
+      className="miniatura-form"
       onSubmit={handleSubmit}
       style={{
         display: 'flex',
@@ -117,14 +116,13 @@ export default function MiniaturaForm({ onAdd }) {
         <input
           id="escala"
           name="escala"
-          placeholder="Escala (1:12, 1:24, etc)"
+          placeholder="Escala (1:12, 1:24, N/A)"
           value={formData.escala}
           onChange={handleChange}
-          pattern="^\d+:\d+$"
+          pattern="^(\d+:\d+|N/A)$"
           list="escalas"
           style={inputStyle}
-          title="A escala deve ser do formato 1:12, 1:24, etc (número:número). 
-          Indica o tamanho da miniatura em relação ao objeto real"
+          title="A escala deve ser no formato 1:12, 1:24, etc, ou N/A."
         />
         <datalist id="escalas">
           {escalasOptions.map((escala, index) => (

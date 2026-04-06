@@ -39,21 +39,19 @@ function App() {
   };
 
   return (
-
-    <div style={{
-      backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.5),
-     rgba(0, 0, 0, 0.8)), 
-     url(${planoFundo})`, backgroundSize: 'cover',
-      backgroundPosition: 'center', backgroundAttachment: 'fixed',
-      minHeight: '100vh', padding: '20px'
+    <div className="page-shell" style={{
+      backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8)), url(${planoFundo})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      minHeight: '100vh'
     }}>
-
       <ResponsiveAppBar />
       <Header />
-      <MiniaturaForm onAdd={handleAdd} />
-      {/* <MiniaturaList miniaturas={miniaturas} /> */}
-      <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} />
-
+      <div className="surface">
+        <MiniaturaForm onAdd={handleAdd} />
+        <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} />
+      </div>
     </div>
   );
 }
