@@ -70,7 +70,7 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
-              aria-label="account of current user"
+              aria-label="open navigation menu"
               aria-controls="menu-appbar"
               aria-haspopup="true"
               onClick={handleOpenNavMenu}
@@ -92,33 +92,31 @@ function ResponsiveAppBar() {
               }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' } }}
+              PaperProps={{
+                sx: {
+                  backgroundColor: 'rgba(18, 22, 45, 0.98)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(0, 255, 204, 0.25)',
+                }
+              }}
             >
-              {/* {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
-              ))} */}
-              <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                {pages.map((page) => (
-                  <Button
-                    key={page}
-                    // Se o item for "Logout", chama a função de logout e redireciona para login, caso 
-                    // contrário, apenas fecha o menu
-                    onClick={() => {
-                      if (page === 'Logout') {
-                        logout(); // limpa usuário do contexto e localStorage
-                        navigate('/login'); // redireciona para login
-                      } else {
-                        handleCloseNavMenu();
-                      }
-                    }}
-                    sx={{ my: 2, color: 'white', display: 'block' }}
-                  >
+              {pages.map((page) => (
+                <MenuItem
+                  key={page}
+                  onClick={() => {
+                    handleCloseNavMenu();
+                    if (page === 'Logout') {
+                      logout();
+                      navigate('/login');
+                    }
+                  }}
+                  sx={{ color: '#ffffff' }}
+                >
+                  <Typography textAlign="center" sx={{ width: '100%', color: '#ffffff' }}>
                     {page}
-                  </Button>
-                ))}
-              </Box>
+                  </Typography>
+                </MenuItem>
+              ))}
             </Menu>
           </Box>
           <PaletteIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
@@ -140,17 +138,7 @@ function ResponsiveAppBar() {
           >
             LOGO
           </Typography>
-          {/* <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
-              <Button
-                key={page}
-                onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: 'white', display: 'block' }}
-              >
-                {page}
-              </Button>
-            ))}
-          </Box> */}
+
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             {pages.map((page) => (
               <Button
@@ -170,11 +158,7 @@ function ResponsiveAppBar() {
             ))}
           </Box>
           <Box sx={{ flexGrow: 0 }}>
-            {/* <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
-              </IconButton>
-            </Tooltip> */}
+
             <Menu
               sx={{ mt: '45px' }}
               id="menu-appbar"
@@ -191,11 +175,7 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {/* {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                </MenuItem>
-              ))} */}
+
             </Menu>
           </Box>
         </Toolbar>
