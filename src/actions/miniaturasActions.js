@@ -37,7 +37,8 @@ export const handleInputChange = (e, formData, setFormData) => {
     // Validação especial para escala: permite somente dígitos e ':' durante a digitação
     // e valida no submit para garantir formato completo (ex: 1:12, 1:24, 2:30)
     if (name === 'escala') {
-        if (value !== '' && value !== 'N/A' && !/^[\d:]*$/.test(value)) {
+        const normalized = value.trim().toUpperCase();
+        if (normalized !== '' && normalized !== 'N/A' && !/^[\d:]*$/.test(value)) {
             return; // Não aceita caracteres fora de dígitos e ':'
         }
     }
@@ -56,7 +57,8 @@ export const handleInputChange = (e, formData, setFormData) => {
         [name]: value
     });
 };
-
+// Função para salvar nova miniatura, recebe os dados do formulário e a função de add do componente pai 
+// para atualizar a lista, além de funções para mostrar mensagens de sucesso/erro
 export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSucesso, setMensagemErro, setFormData, INITIAL_FORM_STATE) => {
     e.preventDefault();
 
@@ -68,15 +70,16 @@ export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSuces
         return;
     }
 
-    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24)
+    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24) ou N/A
     const escalaPattern = /^\d+:\d+$/;
-    if (!escalaPattern.test(formData.escala)) {
-        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc.');
+    if (!(escalaPattern.test(formData.escala) || formData.escala.trim().toUpperCase() === 'N/A')) {
+        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc., ou N/A.');
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
 
-    //  Construção do objeto a ser enviado para o backend
+    //  Construção do objeto a ser enviado para o backend (backend espera nomeDoPersonagem, universo, 
+    // escala, material, marca, altura)
     const newMini = {
         nomeDoPersonagem: formData.nomeDoPersonagem,
         universo: formData.universo,
@@ -118,7 +121,8 @@ export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSuces
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
     }
 };
-
+// Função para salvar miniatura editada, recebe o id da miniatura, os dados do formulário e a função de 
+// update do componente pai para atualizar a lista
 export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen) => {
     e.preventDefault();
 
@@ -130,10 +134,10 @@ export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagem
         return;
     }
 
-    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24)
+    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24) ou N/A
     const escalaPattern = /^\d+:\d+$/;
-    if (!escalaPattern.test(formData.escala)) {
-        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc.');
+    if (!(escalaPattern.test(formData.escala) || formData.escala.trim().toUpperCase() === 'N/A')) {
+        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc., ou N/A.');
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
