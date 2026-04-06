@@ -9,7 +9,6 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturasActions';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -21,7 +20,6 @@ import {
   escalasOptions,
   materiaisOptions
 } from '../data/formOptions';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 
 export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // Estados para modal de edição da miniatura
@@ -89,7 +87,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
       }, 300);
     }
     // setDeleted(false); // resetar flag
-  }, [miniaturas, page]);
+  }, [deleted, miniaturas, page]);
 
   // salvar edição
   const handleSave = (e) => handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen, setSeveridade);
@@ -153,7 +151,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
   // const listToRender = searchValue.trim() ? searchResults : currentItems;
 
   return (
-    <div style={{ marginTop: '20px', fontFamily }}>
+    <div className="miniatura-list" style={{ marginTop: '20px', fontFamily }}>
+
       {/* Notificação de delete */}
       <Notification
         open={!!mensagemDelete}
@@ -163,6 +162,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         duration={5000}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
+
       {/* Notificação de sucesso de edição */}
       <Notification
         open={!!mensagemSucesso}
@@ -172,98 +172,98 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         duration={5000}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
-      {/* Busca autocomplete somente por nomes */}
-      {/*TODO Fazer Busca autocomplete por outros campos */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        marginBottom: '15px'
-      }}>
-        <label style={{
-          marginBottom: '5px',
-          fontWeight: 'bold',
-          color: colors.primaryButton
-        }}>Buscar Miniaturas:</label>
-        <div style={{ display: 'flex', gap: '5px' }}>
 
-          <input
-            type="text"
-            // placeholder=""
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            style={{
-              padding: '8px',
-              width: '300px',
-              borderRadius: '6px',
-              border: `1px solid ${colors.primaryButton}`,
-              background: 'rgba(26,26,46,0.8)',
-              color: colors.textLight
-            }}
-          />
-          <button
-            onClick={clearSearch}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '6px',
-              border: 'none',
-              background: colors.primaryButton,
-              color: '#000',
-              cursor: 'pointer'
-            }}
-          >
-            X
-          </button></div>
-
-        {/* Lista de sugestões autocomplete */}
-        {searchResults.length > 0 && (
-          <div style={{
-            marginTop: '5px',
-            width: '300px',
-            background: 'rgba(0,0,0,0.85)',
-            color: colors.textLight,
-            borderRadius: '6px',
-            boxShadow: '0 0 8px #00ffcc',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            padding: '5px'
-          }}>
-            {searchResults.map((res) => (
-              <div key={res.id} style={{ borderBottom: '1px solid #00ffcc', padding: '5px 0' }}>
-                <div><strong>Nome:</strong> {res.nome}</div>
-                <div><strong>Universo:</strong> {res.universo}</div>
-                <div><strong>Escala:</strong> {res.escala}</div>
-                <div><strong>Material:</strong> {res.material}</div>
-                <div><strong>Marca:</strong> {res.marca}</div>
-                <div><strong>Altura:</strong> {res.altura} cm</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
+      {/* Título da página */}
       <h2 style={{
         color: colors.primaryButton,
         textAlign: 'center',
         textShadow: '0 0 5px #00ffcc',
+        margin: 0,
+        flex: '0 0 auto',
+        minWidth: '190px',
         marginBottom: '20px'
       }}>{pageTitle}</h2>
 
+      {/* TODO futura implementacao */}
+      {/* Busca autocomplete somente por nomes */}
+      {/*TODO Fazer Busca autocomplete por outros campos */}
+      {/* <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '1rem',
+        marginBottom: '15px'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '250px', flex: '1 1 320px' }}>
+          <label style={{
+            fontWeight: 'bold',
+            color: colors.primaryButton
+          }}>Buscar Miniaturas por nome:</label>
+          <div style={{ display: 'flex', gap: '5px' }}>
+
+            <input
+              type="text"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              style={{
+                padding: '8px',
+                width: '100%',
+                maxWidth: '340px',
+                borderRadius: '6px',
+                border: `1px solid ${colors.primaryButton}`,
+                background: 'rgba(26,26,46,0.8)',
+                color: colors.textLight
+              }}
+            />
+            <button
+              onClick={clearSearch}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                background: colors.primaryButton,
+                color: '#000',
+                cursor: 'pointer'
+              }}
+            >
+              X
+            </button></div> */}
+
+          {/* Lista de sugestões autocomplete */}
+          {/* {searchResults.length > 0 && (
+            <div style={{
+              marginTop: '5px',
+              width: '100%',
+              maxWidth: '340px',
+              background: 'rgba(0,0,0,0.85)',
+              color: colors.textLight,
+              borderRadius: '6px',
+              boxShadow: '0 0 8px #00ffcc',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              padding: '5px'
+            }}>
+              {searchResults.map((res) => (
+                <div key={res.id} style={{ borderBottom: '1px solid #00ffcc', padding: '5px 0' }}>
+                  <div><strong>Nome:</strong> {res.nome}</div>
+                  <div><strong>Universo:</strong> {res.universo}</div>
+                  <div><strong>Escala:</strong> {res.escala}</div>
+                  <div><strong>Material:</strong> {res.material}</div>
+                  <div><strong>Marca:</strong> {res.marca}</div>
+                  <div><strong>Altura:</strong> {res.altura} cm</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div> */}
+
+      {/* Lista de miniaturas */}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {listToRender.map(m => (
-          <li key={m.id} style={{
-            background: 'rgba(26, 26, 46, 0.8)',
-            color: colors.textLight,
-            marginBottom: '10px',
-            padding: '10px',
-            borderRadius: '8px',
-            boxShadow: '0 0 10px #00ffcc',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-
-            <div>
+          <li key={m.id} className="item-wrapper">
+            <div className="item-meta">
               <strong style={{ textDecoration: 'underline' }}>Nome do personagem</strong>: {m.nome}<br />
               <strong style={{ textDecoration: 'underline' }}>Universo</strong>:  {m.universo}<br />
               <strong style={{ textDecoration: 'underline' }}>Escala</strong>: {m.escala}<br />
@@ -273,11 +273,12 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
               <strong style={{ textDecoration: 'underline' }}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
             </div>
 
+            {/* TODO futura implementacao */}
             {/* BOTÕES EDITAR E DELETAR */}
-            <div style={{ display: 'flex', gap: '10px', alignSelf: 'flex-end' }}>
-              <EditButton onClick={() => handleEditClick(m)}
+            <div className="item-actions">
+              {/* <EditButton onClick={() => handleEditClick(m)}
                 isHovered={isHovered}
-                setIsHovered={setIsHovered} />
+                setIsHovered={setIsHovered} /> */}
               <DeleteButton id={m.id} onDelete={handleDelete}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered} />
@@ -318,7 +319,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: 400,
+          width: { xs: '90%', sm: '70%', md: 400 },
+          maxWidth: '680px',
           bgcolor: 'background.paper',
           border: '2px solid #000',
           boxShadow: 24,
@@ -360,10 +362,9 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
                 value={editFormData.escala || ''}
                 onChange={handleChange}
                 list="escalas"
-                pattern="^\d+:\d+$"
+                pattern="^(\d+:\d+|N/A)$"
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-                title="A escala deve ser do formato 1:12, 1:24, etc (número:número). Indica o tamanho da 
-                miniatura em relação ao objeto real"
+                title="A escala deve ser no formato 1:12, 1:24, etc, ou N/A."
               />
               <datalist id="escalas">
                 {escalasOptions.map((escala, index) => (
