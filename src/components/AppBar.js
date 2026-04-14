@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,10 +13,9 @@ import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 
-const pages = ['Perfil', 'Dashboard', 'Logout'];
-// O componente AppBar é responsável por renderizar a barra de navegação no topo da aplicação. Ele utiliza o 
-// Material-UI para criar uma barra responsiva que se adapta a diferentes tamanhos de tela. O componente 
-// também integra a funcionalidade de logout, permitindo que o usuário saia da aplicação e seja 
+const pages = ['Home', 'Dashboard', 'Logout'];
+// O componente AppBar é responsável por renderizar a barra de navegação no topo da aplicação. O componente 
+// integra a funcionalidade de logout, permitindo que o usuário saia da aplicação e seja 
 // redirecionado para a página de login.
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -24,6 +23,7 @@ function ResponsiveAppBar() {
 
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -53,7 +53,7 @@ function ResponsiveAppBar() {
             variant="h6"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            onClick={() => navigate('/miniaturas')}
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -62,6 +62,7 @@ function ResponsiveAppBar() {
               letterSpacing: '.3rem',
               color: 'inherit',
               textDecoration: 'none',
+              cursor: 'pointer',
             }}
           >
             MPM
@@ -108,9 +109,17 @@ function ResponsiveAppBar() {
                     if (page === 'Logout') {
                       logout();
                       navigate('/login');
+                    } else if (page === 'Dashboard') {
+                      navigate('/dashboard');
+                    } else if (page === 'Home') {
+                      navigate('/miniaturas');
                     }
                   }}
-                  sx={{ color: '#ffffff' }}
+                  // Destaque visual para a página atual
+                  sx={{ 
+                    color: '#ffffff',
+                    backgroundColor: (page === 'Home' && location.pathname === '/miniaturas') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
+                  }}
                 >
                   <Typography textAlign="center" sx={{ width: '100%', color: '#ffffff' }}>
                     {page}
@@ -124,7 +133,7 @@ function ResponsiveAppBar() {
             variant="h5"
             noWrap
             component="a"
-            href="#app-bar-with-responsive-menu"
+            onClick={() => navigate('/miniaturas')}
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -134,6 +143,7 @@ function ResponsiveAppBar() {
               letterSpacing: '.3rem',
               color: 'inherit',
               textDecoration: 'none',
+              cursor: 'pointer',
             }}
           >
             LOGO
@@ -147,11 +157,24 @@ function ResponsiveAppBar() {
                   if (page === 'Logout') {
                     logout(); // limpa usuário do contexto e localStorage
                     navigate('/login'); // redireciona para login
+                  } else if (page === 'Dashboard') {
+                    navigate('/dashboard');
+                  } else if (page === 'Home') {
+                    navigate('/miniaturas');
                   } else {
                     handleCloseNavMenu();
                   }
                 }}
-                sx={{ my: 2, color: 'white', display: 'block' }}
+                // Destaque visual para a página atual
+                sx={{ 
+                  my: 2, 
+                  color: 'white', 
+                  display: 'block',
+                  backgroundColor: (page === 'Home' && location.pathname === '/miniaturas') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 255, 204, 0.2)',
+                  },
+                }}
               >
                 {page}
               </Button>
