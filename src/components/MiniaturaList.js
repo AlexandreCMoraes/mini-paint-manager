@@ -184,9 +184,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         marginBottom: '20px'
       }}>{pageTitle}</h2>
 
-      {/* TODO futura implementacao */}
       {/* Busca autocomplete somente por nomes */}
-      {/*TODO Fazer Busca autocomplete por outros campos */}
+      {/*TODO futura implementacao. Fazer Busca autocomplete por outros campos */}
       {/* <div style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -273,12 +272,11 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
               <strong style={{ textDecoration: 'underline' }}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
             </div>
 
-            {/* TODO futura implementacao */}
             {/* BOTÕES EDITAR E DELETAR */}
             <div className="item-actions">
-              {/* <EditButton onClick={() => handleEditClick(m)}
+              <EditButton onClick={() => handleEditClick(m)}
                 isHovered={isHovered}
-                setIsHovered={setIsHovered} /> */}
+                setIsHovered={setIsHovered} />
               <DeleteButton id={m.id} onDelete={handleDelete}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered} />
