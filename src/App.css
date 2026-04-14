@@ -50,6 +50,7 @@ body {
 }
 
 .miniatura-list .item-wrapper {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -67,12 +68,14 @@ body {
 }
 
 .miniatura-list .item-actions {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
   align-items: center;
   justify-content: flex-end;
-  flex: 0 0 auto;
 }
 
 @media (max-width: 1024px) {
@@ -86,7 +89,9 @@ body {
   }
 
   .miniatura-list .item-actions {
+    position: static;
     justify-content: flex-start;
+    margin-top: 1rem;
   }
 }
 
