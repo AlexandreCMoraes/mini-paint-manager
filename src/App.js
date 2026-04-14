@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import { AuthProvider } from "./context/AuthContext"; //  contexto de autenticação
 import Miniaturas from "./pages/Miniaturas"; //  página do sistema
+import Dashboard from "./pages/Dashboard"; //  página do dashboard
 import Login from "./components/LoginPage/Login"; //  página de login 
 import NotFoundPage from "./components/NotFoundPage/NotFoundPage";  //  página para rotas não encontradas
 import { ThemeProvider } from "@mui/material/styles";
@@ -30,6 +31,9 @@ function App() {
 
             {/* Página para rotas não encontradas */}
             <Route path="*" element={<NotFoundPage />} />
+
+            {/* Página do dashboard */}
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
