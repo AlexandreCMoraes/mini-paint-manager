@@ -62,13 +62,31 @@ export const handleInputChange = (e, formData, setFormData) => {
 export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSucesso, setMensagemErro, setFormData, INITIAL_FORM_STATE) => {
     e.preventDefault();
 
+    // Validação de campos: altura deve ser um número maior que zero, e 
+    // todos os campos obrigatórios devem estar preenchidos
+    const alturaNumerica = Number(formData.altura);
+    const camposObrigatoriosPreenchidos = [
+        formData.nomeDoPersonagem,
+        formData.universo,
+        formData.escala,
+        formData.material,
+        formData.marca
+    ].every((campo) => typeof campo === 'string' && campo.trim() !== '');
+
     // Validação antes de tudo para garantir que todos os campos estão preenchidos
-    if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala ||
-        !formData.material || !formData.altura || !formData.marca) {
+    // if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala ||
+    //     !formData.material || !formData.altura || !formData.marca) {
+    if (!camposObrigatoriosPreenchidos || Number.isNaN(alturaNumerica)) {
         setMensagemErro("Por favor, preencha todos os campos antes de adicionar a miniatura!");
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
+    if (alturaNumerica <= 0) {
+        setMensagemErro('A altura deve ser um número maior que zero.');
+        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
+        return;
+    }
+
 
     //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24) ou N/A
     const escalaPattern = /^\d+:\d+$/;
@@ -86,7 +104,8 @@ export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSuces
         escala: formData.escala,
         material: formData.material,
         marca: formData.marca,
-        altura: parseFloat(formData.altura)
+        // altura: parseFloat(formData.altura)
+        altura: alturaNumerica
     };
 
     try {
@@ -126,10 +145,23 @@ export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSuces
 export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen) => {
     e.preventDefault();
 
+    const alturaNumerica = Number(formData.altura);
+    const camposObrigatoriosPreenchidos = [
+        formData.nomeDoPersonagem,
+        formData.universo,
+        formData.escala,
+        formData.material,
+        formData.marca
+    ].every((campo) => typeof campo === 'string' && campo.trim() !== '');
+
     // Validação antes de tudo para garantir que todos os campos estão preenchidos
-    if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala ||
-        !formData.material || !formData.altura || !formData.marca) {
+    if (!camposObrigatoriosPreenchidos || Number.isNaN(alturaNumerica)) {
         setMensagemErro("Por favor, preencha todos os campos antes de salvar a miniatura!");
+        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
+        return;
+    }
+    if (alturaNumerica <= 0) {
+        setMensagemErro('A altura deve ser um número maior que zero.');
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
@@ -149,7 +181,8 @@ export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagem
         escala: formData.escala,
         material: formData.material,
         marca: formData.marca,
-        altura: parseFloat(formData.altura)
+        // altura: parseFloat(formData.altura)
+        altura: alturaNumerica
     };
 
     try {

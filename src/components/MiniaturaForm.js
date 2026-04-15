@@ -172,6 +172,9 @@ export default function MiniaturaForm({ onAdd }) {
           type="number"
           value={formData.altura}
           onChange={handleChange}
+          min="0.01"
+          step="0.01"
+          required
           style={inputStyle}
           title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" 
         para uma miniatura de 15 cm de altura.'

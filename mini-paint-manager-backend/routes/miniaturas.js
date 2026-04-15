@@ -49,14 +49,21 @@ router.get('/search', async (req, res) => {
 // Status code adequado (201).
 router.post('/', async (req, res) => {
   const { nomeDoPersonagem, universo, escala, material, marca, altura } = req.body;
+  // Converter altura para número e validar que é um número maior que zero
+  const alturaNumerica = Number(altura);
   // Validação básica de campos
-  if (!nomeDoPersonagem || !universo || !escala || !material || !marca || !altura) {
+  // if (!nomeDoPersonagem || !universo || !escala || !material || !marca || !altura) {
+  if (!nomeDoPersonagem || !universo || !escala || !material || !marca || Number.isNaN(alturaNumerica)) {
     return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
+  }
+  if (alturaNumerica <= 0) {
+    return res.status(400).json({ message: 'A altura deve ser maior que zero' });
   }
   try {
     const result = await pool.query(
       'INSERT INTO miniaturas (nome, universo, escala, material, marca, altura, data_criacao) VALUES ($1,$2,$3,$4,$5,$6, NOW()) RETURNING *',
-      [nomeDoPersonagem, universo, escala, material, marca, altura]
+      // [nomeDoPersonagem, universo, escala, material, marca, altura]
+      [nomeDoPersonagem, universo, escala, material, marca, alturaNumerica]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -97,16 +104,19 @@ router.delete('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { nomeDoPersonagem, universo, escala, material, marca, altura } = req.body;
+  const alturaNumerica = Number(altura);
 
   // Validação básica de campos
-  if (!nomeDoPersonagem || !universo || !escala || !material || !marca || !altura) {
+  if (!nomeDoPersonagem || !universo || !escala || !material || !marca || Number.isNaN(alturaNumerica)) {
     return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
   }
-
+  if (alturaNumerica <= 0) {
+    return res.status(400).json({ message: 'A altura deve ser maior que zero' });
+  }
   try {
     const result = await pool.query(
       'UPDATE miniaturas SET nome=$1, universo=$2, escala=$3, material=$4, marca=$5, altura=$6 WHERE id=$7 RETURNING *',
-      [nomeDoPersonagem, universo, escala, material, marca, altura, id]
+      [nomeDoPersonagem, universo, escala, material, marca, alturaNumerica, id]
     );
 
 

@@ -64,7 +64,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
       escala: mini.escala,
       material: mini.material,
       marca: mini.marca,
-      altura: mini.altura.toString()
+      // altura: mini.altura.toString()
+      altura: mini.altura != null ? String(mini.altura) : '' // lidar com caso de altura ser null ou undefined
     });
     setOpen(true);
   };
@@ -229,8 +230,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
               X
             </button></div> */}
 
-          {/* Lista de sugestões autocomplete */}
-          {/* {searchResults.length > 0 && (
+      {/* Lista de sugestões autocomplete */}
+      {/* {searchResults.length > 0 && (
             <div style={{
               marginTop: '5px',
               width: '100%',
@@ -403,6 +404,10 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
                 placeholder="Altura (cm)"
                 value={editFormData.altura || ''}
                 onChange={handleChange}
+                min="0.01"
+                step="0.01"
+                required
+                title="A altura deve ser um número maior que zero."
                 style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
               />
               {/* Botões das miniaturas cadastradas */}
