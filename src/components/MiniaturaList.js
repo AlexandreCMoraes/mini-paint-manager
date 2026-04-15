@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
 import DeleteButton from './Buttons/DeleteButton';
@@ -21,12 +22,21 @@ import {
   materiaisOptions
 } from '../data/formOptions';
 
-export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
+export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = 'home' }) {
   // Estados para modal de edição da miniatura
   const [open, setOpen] = useState(false);
   const [selectedMiniatura, setSelectedMiniatura] = useState(null);
   const [editFormData, setEditFormData] = useState({});
   const [isHovered, setIsHovered] = useState(false);
+  const [openedFromParam, setOpenedFromParam] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Pega o editId da URL para abrir o modal de edição se o 
+  // usuário clicar em editar no dashboard, que redireciona para a home 
+  // com o editId na URL. O useEffect que abre o modal de edição verifica 
+  // esse parâmetro e abre o modal com os dados da miniatura correspondente, 
+  // permitindo a edição mesmo sem estar no dashboard.
+  const editIdFromUrl = searchParams.get('editId');
 
   // Estados para notificações
   const [mensagemDelete, setMensagemDelete] = useState('');
@@ -57,17 +67,26 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
 
   // clicar em editar abre modal
   const handleEditClick = (mini) => {
-    setSelectedMiniatura(mini);
-    setEditFormData({
+    const newEditData = {
       nomeDoPersonagem: mini.nome,
       universo: mini.universo,
       escala: mini.escala,
       material: mini.material,
       marca: mini.marca,
-      // altura: mini.altura.toString()
       altura: mini.altura != null ? String(mini.altura) : '' // lidar com caso de altura ser null ou undefined
-    });
-    setOpen(true);
+    };
+    // Se estiver no dashboard, abre o modal de edição simples. Se estiver na 
+    // home, redireciona para a home com o editId na URL para abrir o modal de 
+    // edição com os dados da miniatura correspondente, permitindo a edição 
+    // mesmo sem estar no dashboard.
+    if (modo === 'dashboard') {
+      setSelectedMiniatura(mini);
+      setEditFormData(newEditData);
+      setOpen(true);
+      return;
+    }
+
+    navigate(`/dashboard?editId=${mini.id}`);
   };
   // Garantir que a página atual seja válida mesmo após deletar itens (ex: se estiver na página 3 e 
   // deletar itens que reduzem o total para 2 páginas, volta para a página 2)
@@ -89,6 +108,27 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
     }
     // setDeleted(false); // resetar flag
   }, [deleted, miniaturas, page]);
+
+  // Abrir modal de edição se editId estiver presente na URL e 
+  // modo for dashboard, para permitir edição
+  useEffect(() => {
+    if (modo !== 'dashboard' || !editIdFromUrl || openedFromParam) return;
+
+    const mini = miniaturas.find((m) => String(m.id) === String(editIdFromUrl));
+    if (!mini) return;
+
+    setSelectedMiniatura(mini);
+    setEditFormData({
+      nomeDoPersonagem: mini.nome,
+      universo: mini.universo,
+      escala: mini.escala,
+      material: mini.material,
+      marca: mini.marca,
+      altura: mini.altura != null ? String(mini.altura) : ''
+    });
+    setOpen(true);
+    setOpenedFromParam(true);
+  }, [modo, editIdFromUrl, miniaturas, openedFromParam]);
 
   // salvar edição
   const handleSave = (e) => handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen, setSeveridade);
@@ -148,6 +188,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
     setSearchValue('');
     setSearchResults([]);
   };
+
   // Lista a renderizar: resultados de busca ou itens da página atual
   // const listToRender = searchValue.trim() ? searchResults : currentItems;
 
@@ -174,6 +215,16 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       />
 
+      {/* Notificação de erro de edição */}
+      <Notification
+        open={!!mensagemErro}
+        message={mensagemErro}
+        severity="error"
+        onClose={() => setMensagemErro('')}
+        duration={5000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      />
+
       {/* Título da página */}
       <h2 style={{
         color: colors.primaryButton,
@@ -187,7 +238,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
 
       {/* Busca autocomplete somente por nomes */}
       {/*TODO futura implementacao. Fazer Busca autocomplete por outros campos */}
-      {/* <div style={{
+      <div style={{
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
@@ -228,10 +279,10 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
               }}
             >
               X
-            </button></div> */}
+            </button></div>
 
-      {/* Lista de sugestões autocomplete */}
-      {/* {searchResults.length > 0 && (
+          {/* Lista de sugestões autocomplete */}
+          {searchResults.length > 0 && (
             <div style={{
               marginTop: '5px',
               width: '100%',
@@ -257,7 +308,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
             </div>
           )}
         </div>
-      </div> */}
+      </div>
 
       {/* Lista de miniaturas */}
       <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -275,9 +326,12 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate }) {
 
             {/* BOTÕES EDITAR E DELETAR */}
             <div className="item-actions">
-              <EditButton onClick={() => handleEditClick(m)}
+              <EditButton
+                label={modo === 'dashboard' ? 'Editar' : 'Editar no Dashboard'}
+                onClick={() => handleEditClick(m)}
                 isHovered={isHovered}
-                setIsHovered={setIsHovered} />
+                setIsHovered={setIsHovered}
+              />
               <DeleteButton id={m.id} onDelete={handleDelete}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered} />

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
 // Botão de editar, usado na lista de miniaturas para abrir o modal de edição
-export default function EditButton({ onClick }) {
+export default function EditButton({ onClick, label = 'Editar', type = 'button' }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
     <button
-    type='button'
+      type={type}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -23,7 +23,7 @@ export default function EditButton({ onClick }) {
         transform: isHovered ? 'scale(0.95)' : 'scale(1)'
       }}
     >
-      Editar
+      {label}
     </button>
   );
 }

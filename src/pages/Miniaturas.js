@@ -50,7 +50,7 @@ function App() {
       <Header />
       <div className="surface">
         <MiniaturaForm onAdd={handleAdd} />
-        <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} />
+        <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} modo="home" />
       </div>
     </div>
   );
