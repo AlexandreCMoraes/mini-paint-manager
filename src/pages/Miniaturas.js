@@ -48,6 +48,7 @@ function App() {
     }}>
       <ResponsiveAppBar />
       <Header />
+      {/* TODO mexido para testes de estilos */}
       <div className="surface">
         <MiniaturaForm onAdd={handleAdd} />
         <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} modo="home" />

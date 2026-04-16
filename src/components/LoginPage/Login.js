@@ -4,6 +4,12 @@ import FormUtils from './form-utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+// O componente Login é responsável por renderizar a página de login da 
+// aplicação. Ele inclui um formulário com campos para user, email e senha, 
+// validação de entrada, animações de foco e feedback visual para o 
+// usuário. O componente também integra a funcionalidade de autenticação, 
+// permitindo que o usuário faça login e seja redirecionado para a página 
+// principal da aplicação.
 const Login = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -12,6 +18,8 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
 
+    // Adiciona animações e configurações de rótulos flutuantes ao 
+    // montar o componente
     useEffect(() => {
         FormUtils.addEntranceAnimation(document.querySelector('.login-card'));
         FormUtils.setupFloatingLabels(formRef.current);
@@ -111,7 +119,6 @@ const Login = () => {
                     <div className="success-message show">
                         <div className="success-icon">✓</div>
                         <h3>Login Successful!</h3>
-                        <p>Redirecting to your dashboard...</p>
                     </div>
                 )}
             </div>

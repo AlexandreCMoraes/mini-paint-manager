@@ -21,9 +21,12 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:network": "HOST=0.0.0.0 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "get-ip": "node get-ip.js",
+    "test-api": "node test-api.js"
   },
   "eslintConfig": {
     "extends": [

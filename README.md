@@ -35,12 +35,101 @@ Instala as dependências do projeto.
 Roda o app em modo desenvolvimento.  
 Abra [http://localhost:3000](http://localhost:3000) para visualizar.
 
-A página irá recarregar automaticamente quando você fizer alterações.  
-Você também verá possíveis erros de lint no console.
+### `npm run start:network`
+
+Roda o app em modo desenvolvimento acessível na rede local.  
+Isso permite acessar o app de outros dispositivos na mesma rede (celular, outro computador).
+
+O app estará disponível em:  
+- `http://SEU_IP_LOCAL:3000` (exemplo: `http://192.168.1.100:3000`)
+
+Para descobrir seu IP local, execute no terminal:  
+- Windows: `ipconfig`  
+- Linux/Mac: `ifconfig` ou `ip addr`
+
+**Nota**: Certifique-se de que o firewall permite conexões na porta 3000.
+
+### `npm run get-ip`
+
+Mostra seu IP local na rede para compartilhar o acesso com outros dispositivos.
+
+### `npm run test-api [URL]`
+
+Testa a conectividade com o backend API.  
+Exemplo: `npm run test-api http://192.168.1.100:5000`
+
+## Rodando o Backend
+
+### Pré-requisitos
+
+- Node.js instalado
+- PostgreSQL configurado (ver arquivo `.env` para configurações)
+
+### Configuração
+
+1. **Copie o arquivo de exemplo**:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure as variáveis no `.env`**:
+   - `DB_USER`: usuário do PostgreSQL
+   - `DB_PASSWORD`: senha do PostgreSQL
+   - `DB_HOST`: host do banco (localhost para desenvolvimento)
+   - `DB_PORT`: porta do PostgreSQL (padrão: 5432)
+   - `DB_NAME`: nome do banco de dados
 
 ---
 
-## Próximas etapas
+No diretório `mini-paint-manager-backend`:
+
+### `npm install`
+
+Instala as dependências do backend.
+
+### `npm start`
+
+Inicia o servidor backend.  
+O servidor estará disponível em:  
+- `http://localhost:5000` (local)  
+- `http://SEU_IP_LOCAL:5000` (rede local)
+
+O backend já está configurado para aceitar conexões da rede local.
+
+---
+
+## Segurança e Acesso Remoto
+
+### Acesso na Rede Local
+O projeto está configurado para funcionar na rede local. Para maior segurança:
+
+1. **Firewall**: Certifique-se de que apenas as portas 3000 (frontend) e 5000 (backend) estão abertas
+2. **CORS**: Em produção, configure origens específicas no backend em vez de `origin: true`
+3. **HTTPS**: Para produção, use HTTPS com certificados válidos
+
+### Acesso Fora da Rede Local
+Para compartilhar com dispositivos fora da sua rede Wi-Fi:
+
+#### Opção 1: Port Forwarding (Recomendado para desenvolvimento)
+1. Configure o roteador para redirecionar portas externas para seu IP local
+2. Exemplo: Porta externa 3000 → IP interno:3000, Porta externa 5000 → IP interno:5000
+3. Use seu IP público (verifique em whatismyip.com)
+4. Configure `REACT_APP_API_URL` no `.env.local` com seu domínio/IP público
+
+#### Opção 2: Ngrok (Fácil para testes)
+1. Instale ngrok: `npm install -g ngrok`
+2. Inicie o backend: `ngrok http 5000`
+3. Inicie o frontend: `ngrok http 3000`
+4. Use as URLs geradas pelo ngrok
+5. Configure `REACT_APP_API_URL` no `.env.local`
+
+#### Opção 3: Hospedagem em Nuvem
+- Deploy o backend em serviços como Heroku, Railway, ou Vercel
+- Configure o domínio no `REACT_APP_API_URL`
+
+**⚠️ Aviso**: Acesso remoto sem HTTPS pode expor dados. Use apenas para desenvolvimento/testes.
+
+---
 
 - Implementar backend e conexão com banco de dados (AC2 e AC3)
 - Adicionar funcionalidades extras, como edição e remoção de miniaturas (AC2)

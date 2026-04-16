@@ -8,6 +8,8 @@ import CancelButton from './Buttons/CancelButton';
 import AddButton from './Buttons/AddButton';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturasActions';
@@ -29,6 +31,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   const [editFormData, setEditFormData] = useState({});
   const [isHovered, setIsHovered] = useState(false);
   const [openedFromParam, setOpenedFromParam] = useState(false);
+  const [activeTab, setActiveTab] = useState(0); // Estado para a aba ativa no modal
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // Pega o editId da URL para abrir o modal de edição se o 
@@ -126,6 +129,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       marca: mini.marca,
       altura: mini.altura != null ? String(mini.altura) : ''
     });
+    setActiveTab(0); // Define a aba como "Dados Básicos" ao abrir via URL
     setOpen(true);
     setOpenedFromParam(true);
   }, [modo, editIdFromUrl, miniaturas, openedFromParam]);
@@ -372,106 +376,144 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: { xs: '90%', sm: '70%', md: 400 },
-          maxWidth: '680px',
+          width: { xs: '90%', sm: '70%', md: 600 },
+          maxWidth: '800px',
           bgcolor: 'background.paper',
           border: '2px solid #000',
           boxShadow: 24,
           p: 4,
           background: 'rgba(26, 26, 46)',
           color: colors.textLight,
-
-
         }}>
           <h2 id="edit-miniatura-modal" style={{ textAlign: "center" }}>Editar Miniatura</h2>
           {selectedMiniatura ? (
-            <form onSubmit={handleSave}>
-              <input
-                type="text"
-                name="nomeDoPersonagem"
-                placeholder="Nome do Personagem"
-                value={editFormData.nomeDoPersonagem || ''}
-                onChange={handleChange}
-                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-              />
-              <input
-                type="text"
-                name="universo"
-                placeholder="Universo"
-                value={editFormData.universo || ''}
-                onChange={handleChange}
-                list="universos"
-                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-              />
-              <datalist id="universos">
-                {universoOptions.map((universo, index) => (
-                  <option key={index} value={universo} />
-                ))}
-              </datalist>
-              <input
-                type="text"
-                name="escala"
-                placeholder="Escala"
-                value={editFormData.escala || ''}
-                onChange={handleChange}
-                list="escalas"
-                pattern="^(\d+:\d+|N/A)$"
-                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-                title="A escala deve ser no formato 1:12, 1:24, etc, ou N/A."
-              />
-              <datalist id="escalas">
-                {escalasOptions.map((escala, index) => (
-                  <option key={index} value={escala} />
-                ))}
-              </datalist>
-              <input
-                type="text"
-                name="material"
-                placeholder="Material"
-                value={editFormData.material || ''}
-                onChange={handleChange}
-                list="materiais"
-                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-              />
-              <datalist id="materiais">
-                {materiaisOptions.map((mat, index) => (
-                  <option key={index} value={mat} />
-                ))}
-              </datalist>
-              <input
-                type="text"
-                name="marca"
-                placeholder="Marca"
-                value={editFormData.marca || ''}
-                onChange={handleChange}
-                list="marcas"
-                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-              />
-              <datalist id="marcas">
-                {marcasOptions.map((marca, index) => (
-                  <option key={index} value={marca} />
-                ))}
-              </datalist>
-              <input
-                type="number"
-                name="altura"
-                placeholder="Altura (cm)"
-                value={editFormData.altura || ''}
-                onChange={handleChange}
-                min="0.01"
-                step="0.01"
-                required
-                title="A altura deve ser um número maior que zero."
-                style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-              />
-              {/* Botões das miniaturas cadastradas */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                <CancelButton onCancel={() => setOpen(false)}
-                  isHovered={isHovered}
-                  setIsHovered={setIsHovered} />
-                <AddButton label='Salvar Alterações' isHovered={isHovered} setIsHovered={setIsHovered} />
-              </div>
-            </form>
+            <>
+            {/* Tabs para diferentes seções de edição */}
+              <Tabs
+                value={activeTab}
+                onChange={(event, newValue) => setActiveTab(newValue)}
+                aria-label="abas de edição da miniatura"
+                sx={{
+                  borderBottom: 1,
+                  borderColor: 'divider',
+                  '& .MuiTab-root': {
+                    color: colors.textLight,
+                    '&.Mui-selected': {
+                      color: colors.primaryButton,
+                    },
+                  },
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: colors.primaryButton,
+                  },
+                }}
+              >
+                <Tab label="Dados Básicos" />
+                <Tab label="Imagem" />
+                <Tab label="Extras" />
+              </Tabs>
+
+              <Box sx={{ mt: 2 }}>
+                {activeTab === 0 && (
+                  <form onSubmit={handleSave}>
+                    <input
+                      type="text"
+                      name="nomeDoPersonagem"
+                      placeholder="Nome do Personagem"
+                      value={editFormData.nomeDoPersonagem || ''}
+                      onChange={handleChange}
+                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                    />
+                    <input
+                      type="text"
+                      name="universo"
+                      placeholder="Universo"
+                      value={editFormData.universo || ''}
+                      onChange={handleChange}
+                      list="universos"
+                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                    />
+                    <datalist id="universos">
+                      {universoOptions.map((universo, index) => (
+                        <option key={index} value={universo} />
+                      ))}
+                    </datalist>
+                    <input
+                      type="text"
+                      name="escala"
+                      placeholder="Escala"
+                      value={editFormData.escala || ''}
+                      onChange={handleChange}
+                      list="escalas"
+                      pattern="^(\d+:\d+|N/A)$"
+                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                      title="A escala deve ser no formato 1:12, 1:24, etc, ou N/A."
+                    />
+                    <datalist id="escalas">
+                      {escalasOptions.map((escala, index) => (
+                        <option key={index} value={escala} />
+                      ))}
+                    </datalist>
+                    <input
+                      type="text"
+                      name="material"
+                      placeholder="Material"
+                      value={editFormData.material || ''}
+                      onChange={handleChange}
+                      list="materiais"
+                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                    />
+                    <datalist id="materiais">
+                      {materiaisOptions.map((mat, index) => (
+                        <option key={index} value={mat} />
+                      ))}
+                    </datalist>
+                    <input
+                      type="text"
+                      name="marca"
+                      placeholder="Marca"
+                      value={editFormData.marca || ''}
+                      onChange={handleChange}
+                      list="marcas"
+                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                    />
+                    <datalist id="marcas">
+                      {marcasOptions.map((marca, index) => (
+                        <option key={index} value={marca} />
+                      ))}
+                    </datalist>
+                    <input
+                      type="number"
+                      name="altura"
+                      placeholder="Altura (cm)"
+                      value={editFormData.altura || ''}
+                      onChange={handleChange}
+                      min="0.01"
+                      step="0.01"
+                      required
+                      title="A altura deve ser um número maior que zero."
+                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                    />
+                    {/* Botões das miniaturas cadastradas */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                      <CancelButton onCancel={() => setOpen(false)}
+                        isHovered={isHovered}
+                        setIsHovered={setIsHovered} />
+                      <AddButton label='Salvar Alterações' isHovered={isHovered} setIsHovered={setIsHovered} />
+                    </div>
+                  </form>
+                )}
+                {activeTab === 1 && (
+                  <Box sx={{ p: 2 }}>
+                    <p>Conteúdo da aba Imagem - Em desenvolvimento</p>
+                  </Box>
+                )}
+                {activeTab === 2 && (
+                  <Box sx={{ p: 2 }}>
+                    <p>Conteúdo da aba Extras - Em desenvolvimento</p>
+                  </Box>
+                )}
+              </Box>
+            </>
           ) : null}
         </Box>
       </Modal>

@@ -50,8 +50,9 @@ export default function MiniaturaForm({ onAdd }) {
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
-        background: 'rgba(26, 26, 46, 0.8)',
-        padding: '20px',
+        // TODO mexido para testes de estilos
+        // background: 'rgba(26, 26, 46, 0.8)',
+        // padding: '20px',
         borderRadius: '10px',
         color: colors.textLight,
         fontFamily
@@ -179,6 +180,12 @@ export default function MiniaturaForm({ onAdd }) {
           title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" 
         para uma miniatura de 15 cm de altura.'
         />
+        <h6 style={{
+          color: '#fff',
+          textAlign: 'center'
+        }}>
+          Para adicionar imagens e editar todos os detalhes, acesse o Dashboard.
+        </h6>
         {/* Botao add miniatura form */}
         <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} />
       </Box>

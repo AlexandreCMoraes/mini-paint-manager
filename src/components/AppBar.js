@@ -146,7 +146,7 @@ function ResponsiveAppBar() {
               cursor: 'pointer',
             }}
           >
-            LOGO
+            MPM
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
