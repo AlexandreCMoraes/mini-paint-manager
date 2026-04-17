@@ -5,7 +5,7 @@ import ResponsiveAppBar from '../components/AppBar';
 import Header from '../components/Header';
 import Button from '../components/Buttons/Button';
 
-function Perfil() {
+function Profile() {
   const navigate = useNavigate();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -19,7 +19,7 @@ function Perfil() {
     setNome('');
     setEmail('');
     setSenha('');
-    navigate('/miniaturas');
+    navigate('/home');
   };
 
   const handleDeleteConta = () => {
@@ -85,4 +85,4 @@ function Perfil() {
   );
 }
 
-export default Perfil;
+export default Profile;

@@ -53,7 +53,7 @@ function ResponsiveAppBar() {
             variant="h6"
             noWrap
             component="a"
-            onClick={() => navigate('/miniaturas')}
+            onClick={() => navigate('/home')}
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
@@ -112,15 +112,15 @@ function ResponsiveAppBar() {
                     } else if (page === 'Dashboard') {
                       navigate('/dashboard');
                     } else if (page === 'Home') {
-                      navigate('/miniaturas');
+                      navigate('/home');
                     } else if (page === 'Profile') {
-                      navigate('/perfil');
+                      navigate('/profile');
                     }
                   }}
                   // Destaque visual para a página atual
                   sx={{
                     color: '#ffffff',
-                    backgroundColor: (page === 'Home' && location.pathname === '/miniaturas') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
+                    backgroundColor: (page === 'Home' && location.pathname === '/home') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
                   }}
                 >
                   <Typography textAlign="center" sx={{ width: '100%', color: '#ffffff' }}>
@@ -135,7 +135,7 @@ function ResponsiveAppBar() {
             variant="h5"
             noWrap
             component="a"
-            onClick={() => navigate('/miniaturas')}
+            onClick={() => navigate('/home')}
             sx={{
               mr: 2,
               display: { xs: 'flex', md: 'none' },
@@ -162,9 +162,9 @@ function ResponsiveAppBar() {
                   } else if (page === 'Dashboard') {
                     navigate('/dashboard');
                   } else if (page === 'Home') {
-                    navigate('/miniaturas');
+                    navigate('/home');
                   } else if (page === 'Profile') {
-                    navigate('/perfil');
+                    navigate('/profile');
                   } else {
                     handleCloseNavMenu();
                   }
@@ -174,7 +174,7 @@ function ResponsiveAppBar() {
                   my: 2,
                   color: 'white',
                   display: 'block',
-                  backgroundColor: (page === 'Home' && location.pathname === '/miniaturas') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
+                  backgroundColor: (page === 'Home' && location.pathname === '/home') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
                   '&:hover': {
                     backgroundColor: 'rgba(0, 255, 204, 0.2)',
                   },

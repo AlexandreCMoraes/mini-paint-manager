@@ -5,7 +5,7 @@
 const API_BASE_URL = process.argv[2] || process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 // Testa a conectividade com o backend fazendo uma requisição simples 
-// para o endpoint de miniaturas
+// para o endpoint de miniaturas para verificar se o backend está respondendo corretamente.
 async function testApiConnection() {
   try {
     console.log('Testando conexão com:', API_BASE_URL);

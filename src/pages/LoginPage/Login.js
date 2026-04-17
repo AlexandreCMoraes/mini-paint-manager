@@ -49,7 +49,7 @@ const Login = () => {
         try {
             await FormUtils.simulateLogin(email, password);
             setShowSuccess(true);
-            navigate('/miniaturas');
+            navigate('/home');
             login({ email });
             setTimeout(() => {
                 setShowSuccess(false);
