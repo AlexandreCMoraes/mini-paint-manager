@@ -5,6 +5,7 @@ import Miniaturas from "./pages/Miniaturas"; //  página do sistema
 import Dashboard from "./pages/Dashboard"; //  página do dashboard
 import Login from "./components/LoginPage/Login"; //  página de login 
 import NotFoundPage from "./components/NotFoundPage/NotFoundPage";  //  página para rotas não encontradas
+import Perfil from "./pages/Perfil"; //  página de perfil do usuário
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./styles/theme"; //  tema atual
@@ -28,6 +29,9 @@ function App() {
 
             {/* Se quiser, qualquer rota desconhecida redireciona para Miniaturas */}
             {/* <Route path="*" element={<Miniaturas />} /> */}
+
+            {/* Página de perfil */}
+            <Route path="/perfil" element={<Perfil />} />
 
             {/* Página para rotas não encontradas */}
             <Route path="*" element={<NotFoundPage />} />

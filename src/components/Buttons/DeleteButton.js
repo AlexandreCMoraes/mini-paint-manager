@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function DeleteButton({ id, onDelete }) {
+export default function DeleteButton({ id, onDelete, label = 'Deletar' }) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -21,7 +21,7 @@ export default function DeleteButton({ id, onDelete }) {
         transform: isHovered ? 'scale(0.95)' : 'scale(1)'
       }}
     >
-      Deletar
+      {label}
     </button>
   );
 }

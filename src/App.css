@@ -34,6 +34,7 @@ body {
   padding: clamp(1rem, 2.5vw, 1.5rem);
 }
 
+/* Pagina Home, forms */
 .miniatura-form,
 .miniatura-list {
   width: 100%;
@@ -49,6 +50,7 @@ body {
   font-size: clamp(0.9rem, 1.5vw, 1rem);
 }
 
+/* Lista de miniaturas */
 .miniatura-list .item-wrapper {
   position: relative;
   display: flex;
@@ -78,6 +80,7 @@ body {
   justify-content: flex-end;
 }
 
+/* Responsivo */
 @media (max-width: 1024px) {
   .page-shell {
     padding: clamp(0.8rem, 3vw, 1.25rem);
@@ -96,17 +99,60 @@ body {
 }
 
 @media (max-width: 640px) {
-  .css-1a79h8z-MuiFormControl-root, .miniatura-form .MuiInputBase-root {
+
+  .css-1a79h8z-MuiFormControl-root,
+  .miniatura-form .MuiInputBase-root {
     width: 100% !important;
   }
 
-  .page-shell {
-    padding: 1rem;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-size: clamp(1rem, 5vw, 1.5rem);
   }
 }
 
+.perfil-surface {
+  margin-top: 1rem;
+}
 
+.perfil-title {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 10px #00ffcc;
+}
+
+.perfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.perfil-form label {
+  font-weight: 600;
+}
+
+.perfil-form input {
+  width: 100%;
+  border: 1px solid rgba(0, 255, 204, 0.4);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  background: rgba(10, 15, 42, 0.9);
+  color: #f5f7ff;
+  outline: none;
+}
+
+.perfil-form input:focus {
+  border-color: #00ffcc;
+  box-shadow: 0 0 8px rgba(0, 255, 204, 0.5);
+}
+
+.perfil-actions {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}

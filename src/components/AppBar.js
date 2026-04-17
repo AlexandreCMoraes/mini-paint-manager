@@ -13,7 +13,7 @@ import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 
-const pages = ['Home', 'Dashboard', 'Logout'];
+const pages = ['Home', 'Dashboard', 'Logout', 'Profile'];
 // O componente AppBar é responsável por renderizar a barra de navegação no topo da aplicação. O componente 
 // integra a funcionalidade de logout, permitindo que o usuário saia da aplicação e seja 
 // redirecionado para a página de login.
@@ -113,10 +113,12 @@ function ResponsiveAppBar() {
                       navigate('/dashboard');
                     } else if (page === 'Home') {
                       navigate('/miniaturas');
+                    } else if (page === 'Profile') {
+                      navigate('/perfil');
                     }
                   }}
                   // Destaque visual para a página atual
-                  sx={{ 
+                  sx={{
                     color: '#ffffff',
                     backgroundColor: (page === 'Home' && location.pathname === '/miniaturas') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
                   }}
@@ -161,14 +163,16 @@ function ResponsiveAppBar() {
                     navigate('/dashboard');
                   } else if (page === 'Home') {
                     navigate('/miniaturas');
+                  } else if (page === 'Profile') {
+                    navigate('/perfil');
                   } else {
                     handleCloseNavMenu();
                   }
                 }}
                 // Destaque visual para a página atual
-                sx={{ 
-                  my: 2, 
-                  color: 'white', 
+                sx={{
+                  my: 2,
+                  color: 'white',
                   display: 'block',
                   backgroundColor: (page === 'Home' && location.pathname === '/miniaturas') || (page === 'Dashboard' && location.pathname === '/dashboard') ? 'rgba(0, 255, 204, 0.2)' : 'transparent',
                   '&:hover': {

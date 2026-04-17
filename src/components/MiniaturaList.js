@@ -385,7 +385,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
           background: 'rgba(26, 26, 46)',
           color: colors.textLight,
         }}>
-          <h2 id="edit-miniatura-modal" style={{ textAlign: "center" }}>Editar Miniatura</h2>
+          <h2 id="edit-miniatura-modal" style={{ textAlign: "center" }}>Edição de Miniatura</h2>
           {selectedMiniatura ? (
             <>
             {/* Tabs para diferentes seções de edição */}
