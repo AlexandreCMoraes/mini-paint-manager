@@ -8,7 +8,7 @@ import {
   universoOptions,
   escalasOptions,
   materiaisOptions
-} from '../data/formOptions';
+} from '../features/miniaturas/formOptions';
 import Box from '@mui/material/Box';
 
 // Estado inicial do formulário

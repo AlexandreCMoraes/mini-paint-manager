@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Login.css';
-import FormUtils from './form-utils';
+import FormUtils from '../../utils/form-utils'; // Importa as funções utilitárias para o formulário
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 

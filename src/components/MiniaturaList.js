@@ -19,14 +19,13 @@ import {
   universoOptions,
   escalasOptions,
   materiaisOptions
-} from '../data/formOptions';
+} from '../features/miniaturas/formOptions';
 
 export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = 'home' }) {
   // Estados para modal de edição da miniatura
   const [open, setOpen] = useState(false);
   const [selectedMiniatura, setSelectedMiniatura] = useState(null);
   const [editFormData, setEditFormData] = useState({});
-  const [isHovered, setIsHovered] = useState(false);
   const [openedFromParam, setOpenedFromParam] = useState(false);
   const [activeTab, setActiveTab] = useState(0); // Estado para a aba ativa no modal
   const navigate = useNavigate();

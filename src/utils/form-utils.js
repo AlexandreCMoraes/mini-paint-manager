@@ -1,4 +1,4 @@
-// src/components/Login/form-utils.js
+// Utilitários de formulário da página de login
 const FormUtils = {
     validateEmail: (value) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
