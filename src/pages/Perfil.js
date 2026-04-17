@@ -3,16 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
 import Header from '../components/Header';
-import AddButton from '../components/Buttons/AddButton';
-import CancelButton from '../components/Buttons/CancelButton';
-import DeleteButton from '../components/Buttons/DeleteButton';
+import Button from '../components/Buttons/Button';
 
 function Perfil() {
   const navigate = useNavigate();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [isSaveHovered, setIsSaveHovered] = useState(false);
 
   const handleSalvar = (event) => {
     event.preventDefault();
@@ -74,13 +71,13 @@ function Perfil() {
           />
 
           <div className="perfil-actions">
-            <AddButton
+            <Button
+              type="submit"
               label="Salvar"
-              isHovered={isSaveHovered}
-              setIsHovered={setIsSaveHovered}
+              variant="primary"
             />
-            <CancelButton onCancel={handleCancelar} />
-            <DeleteButton onDelete={handleDeleteConta} label="Deletar conta" />
+            <Button onCancel={handleCancelar} label="Cancelar" variant='neutral'/>
+            <Button onDelete={handleDeleteConta} label="Deletar conta" variant='danger'/>
           </div>
         </form>
       </div>

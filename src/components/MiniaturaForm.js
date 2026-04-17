@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
-import AddButton from './Buttons/AddButton';
+import Button from './Buttons/Button';
 import { handleInputChange, handleSubmitMiniatura } from '../actions/miniaturasActions';
 import {
   marcasOptions,
@@ -27,7 +27,6 @@ export default function MiniaturaForm({ onAdd }) {
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [mensagemErro, setMensagemErro] = useState('');
-  const [isHovered, setIsHovered] = useState(false);
 
   // Handle para mudanças no formulário
   const handleChange = (e) => handleInputChange(e, formData, setFormData);
@@ -187,7 +186,8 @@ export default function MiniaturaForm({ onAdd }) {
           Para adicionar imagens e editar todos os detalhes, acesse o Dashboard.
         </h6>
         {/* Botao add miniatura form */}
-        <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} />
+        <Button type='submit' label='Adicionar Miniatura' variant='primary' />
+        {/* <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} /> */}
       </Box>
     </form>
   );

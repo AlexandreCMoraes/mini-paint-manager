@@ -6,7 +6,7 @@ import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
 import { API_ENDPOINTS } from '../config/api';
 
-function App() {
+function Home() {
   const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
 
   // Função para buscar miniaturas do backend e atualizar estado
@@ -57,4 +57,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;

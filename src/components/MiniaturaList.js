@@ -2,10 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { colors, fontFamily } from '../styles/theme';
 import Notification from './Notification';
-import DeleteButton from './Buttons/DeleteButton';
-import EditButton from './Buttons/EditButton';
-import CancelButton from './Buttons/CancelButton';
-import AddButton from './Buttons/AddButton';
+import Button from './Buttons/Button';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -330,15 +327,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
 
             {/* BOTÕES EDITAR E DELETAR */}
             <div className="item-actions">
-              <EditButton
-                label={modo === 'dashboard' ? 'Editar' : 'Editar no Dashboard'}
-                onClick={() => handleEditClick(m)}
-                isHovered={isHovered}
-                setIsHovered={setIsHovered}
-              />
-              <DeleteButton id={m.id} onDelete={handleDelete}
-                isHovered={isHovered}
-                setIsHovered={setIsHovered} />
+              <Button label='Editar no Dashboard' onClick={() => handleEditClick(m)} variant='secondary' />
+              <Button label='Deletar' onClick={() => handleDelete(m.id)} variant='danger' />
             </div>
           </li>
         ))}
@@ -388,7 +378,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
           <h2 id="edit-miniatura-modal" style={{ textAlign: "center" }}>Edição de Miniatura</h2>
           {selectedMiniatura ? (
             <>
-            {/* Tabs para diferentes seções de edição */}
+              {/* Tabs para diferentes seções de edição */}
               <Tabs
                 value={activeTab}
                 onChange={(event, newValue) => setActiveTab(newValue)}
@@ -495,10 +485,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                     />
                     {/* Botões das miniaturas cadastradas */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                      <CancelButton onCancel={() => setOpen(false)}
-                        isHovered={isHovered}
-                        setIsHovered={setIsHovered} />
-                      <AddButton label='Salvar Alterações' isHovered={isHovered} setIsHovered={setIsHovered} />
+                      <Button label='Cancelar' onClick={() => setOpen(false)} variant='neutral' />
+                      <Button type='submit' label='Salvar Alterações' variant='primary' />
                     </div>
                   </form>
                 )}

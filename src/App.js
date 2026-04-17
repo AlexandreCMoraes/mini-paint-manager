@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import { AuthProvider } from "./context/AuthContext"; //  contexto de autenticação
-import Miniaturas from "./pages/Miniaturas"; //  página do sistema
+import Home from "./pages/Home"; //  página do sistema
 import Dashboard from "./pages/Dashboard"; //  página do dashboard
 import Login from "./components/LoginPage/Login"; //  página de login 
 import NotFoundPage from "./components/NotFoundPage/NotFoundPage";  //  página para rotas não encontradas
@@ -25,7 +25,7 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             {/* Página principal do sistema */}
-            <Route path="/miniaturas" element={<Miniaturas />} />
+            <Route path="/miniaturas" element={<Home />} />
 
             {/* Se quiser, qualquer rota desconhecida redireciona para Miniaturas */}
             {/* <Route path="*" element={<Miniaturas />} /> */}
