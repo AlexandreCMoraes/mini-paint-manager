@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { colors, fontFamily } from '../styles/theme';
+import styles from './MiniaturaForm.module.css';
 import Notification from './Notification';
 import Button from './Buttons/Button';
 import { handleInputChange, handleSubmitMiniatura } from '../actions/miniaturasActions';
@@ -43,19 +43,8 @@ export default function MiniaturaForm({ onAdd }) {
   // Render
   return (
     <form
-      className="miniatura-form"
+      className={`${styles.container} miniatura-form`}
       onSubmit={handleSubmit}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
-        // TODO mexido para testes de estilos
-        // background: 'rgba(26, 26, 46, 0.8)',
-        // padding: '20px',
-        borderRadius: '10px',
-        color: colors.textLight,
-        fontFamily
-      }}
     >
 
       {/* Notificação de sucesso */}
@@ -74,15 +63,7 @@ export default function MiniaturaForm({ onAdd }) {
         onClose={() => setMensagemErro('')}
       />
 
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-          background: 'rgba(26, 26, 46, 0.8)',
-          padding: '20px',
-          borderRadius: '10px',
-        }}
+      <Box className={styles.formCard}
       >
 
         {/* Input para o nome do personagem */}
@@ -93,7 +74,7 @@ export default function MiniaturaForm({ onAdd }) {
           // label="Nome do Personagem"
           value={formData.nomeDoPersonagem}
           onChange={handleChange}
-          style={inputStyle}
+          className={styles.inputField}
           title='O nome do personagem é o nome da miniatura, por exemplo "Homem-Aranha" ou "Master Chief".'
         />
         {/* Input para o universo */}
@@ -104,7 +85,7 @@ export default function MiniaturaForm({ onAdd }) {
           value={formData.universo}
           onChange={handleChange}
           list="universos"
-          style={inputStyle}
+          className={styles.inputField}
           title='O universo indica a origem do personagem, por exemplo "Marvel", "DC", ou "Video-Game".'
         />
         <datalist id="universos">
@@ -121,7 +102,7 @@ export default function MiniaturaForm({ onAdd }) {
           onChange={handleChange}
           pattern="^(\d+:\d+|N/A)$"
           list="escalas"
-          style={inputStyle}
+          className={styles.inputField}
           title="A escala deve ser no formato 1:12, 1:24, etc, ou N/A."
         />
         <datalist id="escalas">
@@ -137,7 +118,7 @@ export default function MiniaturaForm({ onAdd }) {
           value={formData.material}
           onChange={handleChange}
           list="materiais"
-          style={inputStyle}
+          className={styles.inputField}
           title="O material indica o tipo de substância usada para criar a miniatura, por exemplo 
         plástico ou resina."
 
@@ -155,7 +136,7 @@ export default function MiniaturaForm({ onAdd }) {
           value={formData.marca}
           onChange={handleChange}
           list="marcas"
-          style={inputStyle}
+          className={styles.inputField}
           title='A marca indica o fabricante do material usado para criar a miniatura, por exemplo 
         "Elegoo" ou "Anycubic".'
         />
@@ -175,31 +156,16 @@ export default function MiniaturaForm({ onAdd }) {
           min="0.01"
           step="0.01"
           required
-          style={inputStyle}
+          className={styles.inputField}
           title='A altura indica a medida vertical da miniatura em centímetros, por exemplo "15" 
         para uma miniatura de 15 cm de altura.'
         />
-        <h6 style={{
-          color: '#fff',
-          textAlign: 'center'
-        }}>
+        <h6 className={styles.helperText}>
           Para adicionar imagens e editar todos os detalhes, acesse o Dashboard.
         </h6>
         {/* Botao add miniatura form */}
         <Button type='submit' label='Adicionar Miniatura' variant='primary' />
-        {/* <AddButton label='Adicionar Miniatura' isHovered={isHovered} setIsHovered={setIsHovered} /> */}
       </Box>
     </form>
   );
 }
-
-// Estilo reutilizável dos inputs
-const inputStyle = {
-  padding: '8px',
-  borderRadius: '5px',
-  border: 'none',
-  background: '#0f3460',
-  color: '#fff'
-};
-
-

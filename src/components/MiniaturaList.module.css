@@ -1,0 +1,156 @@
+.container {
+  margin-top: 20px;
+  font-family: var(--font-family-base, 'Inter', 'Segoe UI', sans-serif);
+}
+
+.title {
+  color: var(--color-primary-button, #00ffcc);
+  text-align: center;
+  text-shadow: 0 0 5px #00ffcc;
+  margin: 0 0 20px;
+  flex: 0 0 auto;
+  min-width: 190px;
+}
+
+.searchSection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 15px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 250px;
+  flex: 1 1 320px;
+}
+
+.searchLabel {
+  font-weight: bold;
+  color: var(--color-primary-button, #00ffcc);
+}
+
+.searchRow {
+  display: flex;
+  gap: 5px;
+}
+
+.searchInput {
+  padding: 8px;
+  width: 100%;
+  max-width: 340px;
+  border-radius: 6px;
+  border: 1px solid var(--color-primary-button, #00ffcc);
+  background: rgba(26, 26, 46, 0.8);
+  color: var(--color-text-light, #ffffff);
+}
+
+.clearButton {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: var(--color-primary-button, #00ffcc);
+  color: #000000;
+  cursor: pointer;
+}
+
+.searchSuggestions {
+  margin-top: 5px;
+  width: 100%;
+  max-width: 340px;
+  background: rgba(0, 0, 0, 0.85);
+  color: var(--color-text-light, #ffffff);
+  border-radius: 6px;
+  box-shadow: 0 0 8px #00ffcc;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.suggestionItem {
+  border-bottom: 1px solid #00ffcc;
+  padding: 5px 0;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+}
+
+.metaLabel {
+  text-decoration: underline;
+}
+
+.pagination {
+  margin-top: 20px;
+}
+
+.modalContent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(800px, 90%);
+  max-width: 800px;
+  border: 2px solid #000;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  padding: 32px;
+  background: rgba(26, 26, 46, 1);
+  color: var(--color-text-light, #ffffff);
+}
+
+@media (min-width: 600px) {
+  .modalContent {
+    width: 70%;
+  }
+}
+
+@media (min-width: 900px) {
+  .modalContent {
+    width: 600px;
+  }
+}
+
+.modalTitle {
+  text-align: center;
+}
+
+.modalTabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modalTabs :global(.MuiTab-root) {
+  color: var(--color-text-light, #ffffff);
+}
+
+.modalTabs :global(.MuiTab-root.Mui-selected) {
+  color: var(--color-primary-button, #00ffcc);
+}
+
+.modalTabs :global(.MuiTabs-indicator) {
+  background-color: var(--color-primary-button, #00ffcc);
+}
+
+.tabPanel {
+  margin-top: 16px;
+}
+
+.modalInput {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.secondaryTabContent {
+  padding: 16px;
+}

@@ -54,7 +54,7 @@ const Login = () => {
             setTimeout(() => {
                 setShowSuccess(false);
                 formRef.current?.reset();
-            }, 3000);
+            }, 5000);
         } catch (error) {
             FormUtils.showNotification(error.message, 'error', formRef.current);
         } finally {

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { colors, fontFamily } from '../styles/theme';
+import styles from './MiniaturaList.module.css';
 import Notification from './Notification';
 import Button from './Buttons/Button';
 import Modal from '@mui/material/Modal';
@@ -193,8 +193,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // const listToRender = searchValue.trim() ? searchResults : currentItems;
 
   return (
-    <div className="miniatura-list" style={{ marginTop: '20px', fontFamily }}>
-
+    <div className={`${styles.container} miniatura-list`}>
       {/* Notificação de delete */}
       <Notification
         open={!!mensagemDelete}
@@ -226,78 +225,34 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       />
 
       {/* Título da página */}
-      <h2 style={{
-        color: colors.primaryButton,
-        textAlign: 'center',
-        textShadow: '0 0 5px #00ffcc',
-        margin: 0,
-        flex: '0 0 auto',
-        minWidth: '190px',
-        marginBottom: '20px'
-      }}>{pageTitle}</h2>
+      <h2 className={styles.title}>{pageTitle}</h2>
 
       {/* Busca autocomplete somente por nomes */}
       {/*TODO futura implementacao. Fazer Busca autocomplete por outros campos */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '1rem',
-        marginBottom: '15px'
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '250px', flex: '1 1 320px' }}>
-          <label style={{
-            fontWeight: 'bold',
-            color: colors.primaryButton
-          }}>Buscar Miniaturas por nome:</label>
-          <div style={{ display: 'flex', gap: '5px' }}>
+      <div className={styles.searchSection}>
+        <div className={styles.inputGroup}>
+          <label className={styles.searchLabel}>Buscar Miniaturas por nome:</label>
+          <div className={styles.searchRow}>
 
             <input
               type="text"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              style={{
-                padding: '8px',
-                width: '100%',
-                maxWidth: '340px',
-                borderRadius: '6px',
-                border: `1px solid ${colors.primaryButton}`,
-                background: 'rgba(26,26,46,0.8)',
-                color: colors.textLight
-              }}
+              className={styles.searchInput}
             />
             <button
               onClick={clearSearch}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: 'none',
-                background: colors.primaryButton,
-                color: '#000',
-                cursor: 'pointer'
-              }}
+              className={styles.clearButton}
             >
               X
-            </button></div>
+            </button>
+          </div>
 
           {/* Lista de sugestões autocomplete */}
           {searchResults.length > 0 && (
-            <div style={{
-              marginTop: '5px',
-              width: '100%',
-              maxWidth: '340px',
-              background: 'rgba(0,0,0,0.85)',
-              color: colors.textLight,
-              borderRadius: '6px',
-              boxShadow: '0 0 8px #00ffcc',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              padding: '5px'
-            }}>
+            <div className={styles.searchSuggestions}>
               {searchResults.map((res) => (
-                <div key={res.id} style={{ borderBottom: '1px solid #00ffcc', padding: '5px 0' }}>
-                  <div><strong>Nome:</strong> {res.nome}</div>
+                <div key={res.id} className={styles.suggestionItem}>                  <div><strong>Nome:</strong> {res.nome}</div>
                   <div><strong>Universo:</strong> {res.universo}</div>
                   <div><strong>Escala:</strong> {res.escala}</div>
                   <div><strong>Material:</strong> {res.material}</div>
@@ -311,17 +266,17 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       </div>
 
       {/* Lista de miniaturas */}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      <ul className={styles.list}>
         {listToRender.map(m => (
           <li key={m.id} className="item-wrapper">
             <div className="item-meta">
-              <strong style={{ textDecoration: 'underline' }}>Nome do personagem</strong>: {m.nome}<br />
-              <strong style={{ textDecoration: 'underline' }}>Universo</strong>:  {m.universo}<br />
-              <strong style={{ textDecoration: 'underline' }}>Escala</strong>: {m.escala}<br />
-              <strong style={{ textDecoration: 'underline' }}>Material</strong>: {m.material}<br />
-              <strong style={{ textDecoration: 'underline' }}>Marca da Resina/Filamento</strong>: {m.marca}<br />
-              <strong style={{ textDecoration: 'underline' }}>Altura</strong>: {m.altura} cm<br />
-              <strong style={{ textDecoration: 'underline' }}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
+              <strong className={styles.metaLabel}>Nome do personagem</strong>: {m.nome}<br />
+              <strong className={styles.metaLabel}>Universo</strong>:  {m.universo}<br />
+              <strong className={styles.metaLabel}>Escala</strong>: {m.escala}<br />
+              <strong className={styles.metaLabel}>Material</strong>: {m.material}<br />
+              <strong className={styles.metaLabel}>Marca da Resina/Filamento</strong>: {m.marca}<br />
+              <strong className={styles.metaLabel}>Altura</strong>: {m.altura} cm<br />
+              <strong className={styles.metaLabel}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
             </div>
 
             {/* BOTÕES EDITAR E DELETAR */}
@@ -334,10 +289,12 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       </ul>
 
       {/* Paginação */}
-      <Stack ref={paginationRef}
+      <Stack
+        ref={paginationRef}
         spacing={2}
         alignItems="center"
-        style={{ marginTop: '20px' }}>
+        className={styles.pagination}
+      >
         <Pagination
           count={Math.ceil(miniaturas.length / itemsPerPage)}
           page={page}
@@ -360,21 +317,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
         aria-labelledby="edit-miniatura-modal"
         aria-describedby="basic-edit-modal"
       >
-        <Box sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: { xs: '90%', sm: '70%', md: 600 },
-          maxWidth: '800px',
-          bgcolor: 'background.paper',
-          border: '2px solid #000',
-          boxShadow: 24,
-          p: 4,
-          background: 'rgba(26, 26, 46)',
-          color: colors.textLight,
-        }}>
-          <h2 id="edit-miniatura-modal" style={{ textAlign: "center" }}>Edição de Miniatura</h2>
+        <Box className={styles.modalContent}>
+          <h2 id="edit-miniatura-modal" className={styles.modalTitle}>Edição de Miniatura</h2>
           {selectedMiniatura ? (
             <>
               {/* Tabs para diferentes seções de edição */}
@@ -382,27 +326,17 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                 value={activeTab}
                 onChange={(event, newValue) => setActiveTab(newValue)}
                 aria-label="abas de edição da miniatura"
-                sx={{
-                  borderBottom: 1,
-                  borderColor: 'divider',
-                  '& .MuiTab-root': {
-                    color: colors.textLight,
-                    '&.Mui-selected': {
-                      color: colors.primaryButton,
-                    },
-                  },
-                  '& .MuiTabs-indicator': {
-                    backgroundColor: colors.primaryButton,
-                  },
-                }}
+                className={styles.modalTabs}
               >
                 <Tab label="Dados Básicos" />
                 <Tab label="Imagem" />
                 <Tab label="Extras" />
               </Tabs>
 
-              <Box sx={{ mt: 2 }}>
+              <Box className={styles.tabPanel}>
                 {activeTab === 0 && (
+                  // Conteúdo da aba de dados básicos, que inclui o formulário de edição dos 
+                  // campos principais da miniatura.
                   <form onSubmit={handleSave}>
                     <input
                       type="text"
@@ -410,8 +344,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                       placeholder="Nome do Personagem"
                       value={editFormData.nomeDoPersonagem || ''}
                       onChange={handleChange}
-                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
-                    />
+                      className={styles.modalInput} />
                     <input
                       type="text"
                       name="universo"
@@ -419,7 +352,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                       value={editFormData.universo || ''}
                       onChange={handleChange}
                       list="universos"
-                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                      className={styles.modalInput}
                     />
                     <datalist id="universos">
                       {universoOptions.map((universo, index) => (
@@ -434,7 +367,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                       onChange={handleChange}
                       list="escalas"
                       pattern="^(\d+:\d+|N/A)$"
-                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                      className={styles.modalInput}
                       title="A escala deve ser no formato 1:12, 1:24, etc, ou N/A."
                     />
                     <datalist id="escalas">
@@ -449,7 +382,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                       value={editFormData.material || ''}
                       onChange={handleChange}
                       list="materiais"
-                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                      className={styles.modalInput}
                     />
                     <datalist id="materiais">
                       {materiaisOptions.map((mat, index) => (
@@ -463,7 +396,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                       value={editFormData.marca || ''}
                       onChange={handleChange}
                       list="marcas"
-                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                      className={styles.modalInput}
                     />
                     <datalist id="marcas">
                       {marcasOptions.map((marca, index) => (
@@ -480,23 +413,35 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
                       step="0.01"
                       required
                       title="A altura deve ser um número maior que zero."
-                      style={{ width: '100%', marginBottom: '10px', padding: '8px' }}
+                      className={styles.modalInput}
                     />
                     {/* Botões das miniaturas cadastradas */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                    <div className={styles.modalActions}>
                       <Button label='Cancelar' onClick={() => setOpen(false)} variant='neutral' />
                       <Button type='submit' label='Salvar Alterações' variant='primary' />
                     </div>
                   </form>
                 )}
                 {activeTab === 1 && (
-                  <Box sx={{ p: 2 }}>
+                  // Conteúdo da aba de imagem, que pode incluir upload de imagem, visualização 
+                  // da imagem atual, etc.
+                  <Box className={styles.secondaryTabContent}>
                     <p>Conteúdo da aba Imagem - Em desenvolvimento</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                      <Button label='Cancelar' onClick={() => setOpen(false)} variant='neutral' />
+                      <Button type='submit' label='Salvar Alterações' variant='primary' />
+                    </div>
                   </Box>
                 )}
                 {activeTab === 2 && (
-                  <Box sx={{ p: 2 }}>
+                  // Conteúdo da aba de extras, que pode incluir campos adicionais que não se 
+                  // encaixam em dados básicos ou imagem, como descrição, tags, etc.
+                  <Box className={styles.secondaryTabContent}>
                     <p>Conteúdo da aba Extras - Em desenvolvimento</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                      <Button label='Cancelar' onClick={() => setOpen(false)} variant='neutral' />
+                      <Button type='submit' label='Salvar Alterações' variant='primary' />
+                    </div>
                   </Box>
                 )}
               </Box>
