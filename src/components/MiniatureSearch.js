@@ -19,7 +19,7 @@ export default function MiniaturaSearch({ onResults }) {
       }
       // Busca no backend usando o endpoint de busca simples, que retorna miniaturas 
       // cujo nome começa com o input (case-insensitive).
-      fetch(`/miniaturas/search?search=${encodeURIComponent(inputValue)}`)
+      fetch(`/miniatures/search?search=${encodeURIComponent(inputValue)}`)
         .then(res => res.json())
         .then(data => {
           console.log("Resultado do backend:", data);

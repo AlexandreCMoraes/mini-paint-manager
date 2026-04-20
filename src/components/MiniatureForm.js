@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import styles from './MiniaturaForm.module.css';
+import styles from './MiniatureForm.module.css';
 import Notification from './Notification';
 import Button from './Buttons/Button';
-import { handleInputChange, handleSubmitMiniatura } from '../actions/miniaturasActions';
+import { handleInputChange, handleSubmitMiniatura } from '../actions/miniaturesActions';
 import {
   marcasOptions,
   universoOptions,
   escalasOptions,
   materiaisOptions
-} from '../features/miniaturas/formOptions';
+} from '../features/miniatures/formOptions';
 import Box from '@mui/material/Box';
 
 // Estado inicial do formulário

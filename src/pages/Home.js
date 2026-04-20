@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Header from '../components/Header';
-import MiniaturaForm from '../components/MiniaturaForm';
-import MiniaturaList from '../components/MiniaturaList';
+import MiniatureForm from '../components/MiniatureForm';
+import MiniatureList from '../components/MiniatureList';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
 import { API_ENDPOINTS } from '../config/api';
@@ -50,8 +50,8 @@ function Home() {
       <Header />
       {/* TODO mexido para testes de estilos */}
       <div className="surface">
-        <MiniaturaForm onAdd={handleAdd} />
-        <MiniaturaList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} modo="home" />
+        <MiniatureForm onAdd={handleAdd} />
+        <MiniatureList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} modo="home" />
       </div>
     </div>
   );

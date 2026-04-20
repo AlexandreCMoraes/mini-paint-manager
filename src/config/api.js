@@ -26,9 +26,9 @@ export const NOTIFICATION_TIMEOUT = 5000;
 
 // Endpoints da API
 export const API_ENDPOINTS = {
-  MINIATURAS: `${API_BASE_URL}/miniaturas`,
-  MINIATURA_DELETE: (id) => `${API_BASE_URL}/miniaturas/${id}`,
-  MINIATURA_UPDATE: (id) => `${API_BASE_URL}/miniaturas/${id}`,
+  MINIATURAS: `${API_BASE_URL}/miniatures`,
+  MINIATURA_DELETE: (id) => `${API_BASE_URL}/miniatures/${id}`,
+  MINIATURA_UPDATE: (id) => `${API_BASE_URL}/miniatures/${id}`,
 };
 
 export default API_BASE_URL;

@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import styles from './MiniaturaList.module.css';
+import styles from './MiniatureList.module.css';
 import Notification from './Notification';
 import Button from './Buttons/Button';
-import MiniaturaModal from './MiniaturaModal';
+import MiniatureModal from './MiniatureModal';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturasActions';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturesActions';
 import { API_ENDPOINTS } from '../config/api';
 
 // Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
@@ -16,7 +20,25 @@ import {
   universoOptions,
   escalasOptions,
   materiaisOptions
-} from '../features/miniaturas/formOptions';
+} from '../features/miniatures/formOptions';
+
+const SEARCH_FIELD_OPTIONS = [
+  { value: 'nome', label: 'Nome' },
+  { value: 'universo', label: 'Universo' },
+  { value: 'escala', label: 'Escala' },
+  { value: 'material', label: 'Material' },
+  { value: 'marcaResina', label: 'Marca da Resina' },
+  { value: 'altura', label: 'Altura' }
+];
+
+const API_FIELD_BY_SEARCH_FIELD = {
+  nome: 'nome',
+  universo: 'universo',
+  escala: 'escala',
+  material: 'material',
+  marcaResina: 'marca',
+  altura: 'altura'
+};
 
 export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = 'home' }) {
   // Estados para modal de edição da miniatura
@@ -54,6 +76,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // Estados de busca e resultados da busca para filtrar a lista de miniaturas exibida conforme o 
   // usuário digita.
   const [searchValue, setSearchValue] = useState('');
+  const [searchField, setSearchField] = useState('nome');
   const [searchResults, setSearchResults] = useState([]);
 
   const handleDelete = (id) => {
@@ -302,7 +325,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       </Stack>
 
       {/* modal de edição simples */}
-      <MiniaturaModal
+      <MiniatureModal
         open={open}
         // fechar modal ao clicar no botão ou apertar ESC
         onClose={(event, reason) => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import ResponsiveAppBar from '../components/AppBar';
-import MiniaturasLista from '../components/MiniaturaList';
+import MiniaturasLista from '../components/MiniatureList';
 import Header from '../components/Header';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import { API_ENDPOINTS } from '../config/api';

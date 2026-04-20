@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const os = require('os');
-const miniaturasRouter = require('./routes/miniaturas');
+const miniaturasRouter = require('./routes/miniatures');
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 5000;
@@ -28,7 +28,7 @@ app.use(cors({
 app.use(express.json());
 
 // Rotas
-app.use('/miniaturas', miniaturasRouter);
+app.use('/miniatures', miniaturasRouter);
 
 // Teste simples
 app.get('/', (req, res) => {

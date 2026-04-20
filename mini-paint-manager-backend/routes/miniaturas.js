@@ -24,7 +24,10 @@ router.get('/', async (req, res) => {
 // GET: buscar miniaturas por nome do personagem- endpoint de busca simples
 // TODO GET: buscar miniaturas por qualquer campo- endpoint de busca flexível
 router.get('/search', async (req, res) => {
-  const { search } = req.query;
+  // const { search } = req.query;
+  const { search, field = 'nome' } = req.query;
+  const allowedFields = ['nome', 'universo', 'escala', 'material', 'marca', 'altura'];
+  const normalizedField = allowedFields.includes(field) ? field : 'nome';
 
   try {
     if (!search || search.trim() === '') {
@@ -32,7 +35,12 @@ router.get('/search', async (req, res) => {
     }
 
     // Busca apenas por nome do personagem, case-insensitive, prefix-based.
-    const query = `SELECT * FROM miniaturas WHERE LOWER(nome) LIKE LOWER($1) ORDER BY id ASC`;
+    // const query = `SELECT * FROM miniaturas WHERE LOWER(nome) LIKE LOWER($1) ORDER BY id ASC`;
+    // Busca case-insensitive e prefix-based para campos de texto.
+    // Para altura, converte para texto para permitir comportamento consistente com autocomplete.
+    const query = normalizedField === 'altura'
+      ? 'SELECT * FROM miniaturas WHERE CAST(altura AS TEXT) LIKE $1 ORDER BY id ASC'
+      : `SELECT * FROM miniaturas WHERE LOWER(${normalizedField}) LIKE LOWER($1) ORDER BY id ASC`;
     const params = [`${search}%`];
     const result = await pool.query(query, params);
 
