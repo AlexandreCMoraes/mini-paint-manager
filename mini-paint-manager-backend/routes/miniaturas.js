@@ -59,6 +59,11 @@ router.post('/', async (req, res) => {
   if (alturaNumerica <= 0) {
     return res.status(400).json({ message: 'A altura deve ser maior que zero' });
   }
+  // Validação da escala
+  const escalaPattern = /^\d+:\d+$/;
+  if (!(escalaPattern.test(escala) || escala.trim().toUpperCase() === 'N/A')) {
+    return res.status(400).json({ message: 'A escala deve estar no formato 1:12, 1:24, etc., ou N/A.' });
+  }
   try {
     const result = await pool.query(
       'INSERT INTO miniaturas (nome, universo, escala, material, marca, altura, data_criacao) VALUES ($1,$2,$3,$4,$5,$6, NOW()) RETURNING *',
@@ -112,6 +117,11 @@ router.put('/:id', async (req, res) => {
   }
   if (alturaNumerica <= 0) {
     return res.status(400).json({ message: 'A altura deve ser maior que zero' });
+  }
+  // Validação da escala
+  const escalaPattern = /^\d+:\d+$/;
+  if (!(escalaPattern.test(escala) || escala.trim().toUpperCase() === 'N/A')) {
+    return res.status(400).json({ message: 'A escala deve estar no formato 1:12, 1:24, etc., ou N/A.' });
   }
   try {
     const result = await pool.query(
