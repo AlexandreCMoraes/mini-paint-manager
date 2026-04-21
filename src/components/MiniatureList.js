@@ -22,6 +22,8 @@ import {
   materiaisOptions
 } from '../features/miniatures/formOptions';
 
+// Configurações para o campo de busca, permitindo que o usuário escolha por qual campo deseja buscar, 
+// e mapeando para os campos do backend
 const SEARCH_FIELD_OPTIONS = [
   { value: 'nome', label: 'Nome' },
   { value: 'universo', label: 'Universo' },
@@ -78,6 +80,24 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   const [searchValue, setSearchValue] = useState('');
   const [searchField, setSearchField] = useState('nome');
   const [searchResults, setSearchResults] = useState([]);
+
+  // FUNÇÃO PARA DESTACAR TEXTO BUSCADO
+  // Divide o texto e aplica estilo apenas na parte que bate com a busca
+  const highlightText = (text, highlight, field) => {
+    // Se não tiver highlight ou for vazio, retorna o texto normal sem destacar
+    if (!highlight || highlight.trim() === '') return text;
+
+    if (field !== searchField) return text; // só destaca se for o campo selecionado na busca
+
+    const regex = new RegExp(`(${highlight})`, 'gi');
+    const parts = String(text).split(regex);
+
+    return parts.map((part, index) =>
+      part.toLowerCase() === highlight.toLowerCase()
+        ? <span key={index} className={styles.highlightText}>{part}</span>
+        : part
+    );
+  };
 
   const handleDelete = (id) => {
     handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
@@ -186,8 +206,11 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
     // simples, que retorna miniaturas
     const fetchResults = async () => {
       try {
+        const apiSearchField = API_FIELD_BY_SEARCH_FIELD[searchField] || 'nome';
         // Busca no backend usando o endpoint de busca simples, que retorna miniaturas
-        const response = await fetch(`${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchValue)}`);
+        const response = await fetch(
+          `${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchValue)}&field=${encodeURIComponent(apiSearchField)}`
+        );
         if (!response.ok) {
           throw new Error(`HTTP status ${response.status}`);
         }
@@ -201,7 +224,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
     // Debounce para evitar muitas requisições ao backend enquanto o usuário digita, só busca após 300ms
     const delayDebounce = setTimeout(fetchResults, 300);
     return () => clearTimeout(delayDebounce);
-  }, [searchValue]);
+  }, [searchValue, searchField]);
 
   // Limpar busca
   const clearSearch = () => {
@@ -248,17 +271,72 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       <h2 className={styles.title}>{pageTitle}</h2>
 
       {/* Busca autocomplete somente por nomes */}
-      {/*TODO futura implementacao. Fazer Busca autocomplete por outros campos */}
+      {/* TODO futura implementacao. Fazer Busca autocomplete por outros campos */}
       <div className={styles.searchSection}>
         <div className={styles.inputGroup}>
-          <label className={styles.searchLabel}>Buscar Miniaturas por nome:</label>
+          <label className={styles.searchLabel}>Buscar Miniaturas</label>
           <div className={styles.searchRow}>
+
+            {/* Campo de seleção para o campo de busca */}
+            <FormControl
+              size="small"
+              className={styles.searchFieldControl}
+            >
+              <InputLabel id="search-field-label" sx={{
+                color: 'var(--color-primary-button, #00ffcc)',
+                '&.Mui-focused': {
+                  color: 'var(--color-primary-button, #00ffcc)'
+                }
+              }}>Campo</InputLabel>
+              <Select
+                labelId="search-field-label"
+                id="search-field-select"
+
+                value={searchField}
+                label="Campo"
+                onChange={(e) => setSearchField(e.target.value)}
+                MenuProps={{
+                  disableScrollLock: true, // evita problemas de scroll em alguns navegadores
+
+                  PaperProps: {
+                    sx: {
+                      bgcolor: 'rgba(26, 26, 46, 0.98)',
+                      color: 'var(--color-text-light, #ffffff)',
+                      border: '1px solid var(--color-primary-button, #00ffcc)'
+                    }
+                  }
+                }}
+                sx={{
+                  color: 'var(--color-text-light, #ffffff)',
+                  '.MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--color-primary-button, #00ffcc)'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--color-primary-button, #00ffcc)'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'var(--color-primary-button, #00ffcc)'
+                  },
+                  '.MuiSvgIcon-root': {
+                    color: 'var(--color-primary-button, #00ffcc)'
+                  }
+                }}
+              >
+                {SEARCH_FIELD_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
             <input
               type="text"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className={styles.searchInput}
+              placeholder={`Pesquisar por ${SEARCH_FIELD_OPTIONS.find((option) =>
+                option.value === searchField)?.label?.toLowerCase() || 'nome'}`}
             />
             <button
               onClick={clearSearch}
@@ -272,7 +350,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
           {searchResults.length > 0 && (
             <div className={styles.searchSuggestions}>
               {searchResults.map((res) => (
-                <div key={res.id} className={styles.suggestionItem}>                  <div><strong>Nome:</strong> {res.nome}</div>
+                <div key={res.id} className={styles.suggestionItem}>
+                  <div><strong>Nome:</strong> {res.nome}</div>
                   <div><strong>Universo:</strong> {res.universo}</div>
                   <div><strong>Escala:</strong> {res.escala}</div>
                   <div><strong>Material:</strong> {res.material}</div>
@@ -290,12 +369,42 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
         {listToRender.map(m => (
           <li key={m.id} className="item-wrapper">
             <div className="item-meta">
-              <strong className={styles.metaLabel}>Nome do personagem</strong>: {m.nome}<br />
-              <strong className={styles.metaLabel}>Universo</strong>:  {m.universo}<br />
-              <strong className={styles.metaLabel}>Escala</strong>: {m.escala}<br />
-              <strong className={styles.metaLabel}>Material</strong>: {m.material}<br />
-              <strong className={styles.metaLabel}>Marca da Resina/Filamento</strong>: {m.marca}<br />
-              <strong className={styles.metaLabel}>Altura</strong>: {m.altura} cm<br />
+              <strong className={styles.metaLabel}>Nome do personagem</strong>:
+              <span className={searchField === 'nome' ? styles.highlightRow : ''}>
+                {highlightText(m.nome, searchValue, 'nome')}
+              </span>
+              <br />
+
+              <strong className={styles.metaLabel}>Universo</strong>:
+              <span className={searchField === 'universo' ? styles.highlightRow : ''}>
+                {highlightText(m.universo, searchValue, 'universo')}
+              </span>
+              <br />
+
+              <strong className={styles.metaLabel}>Escala</strong>:
+              <span className={searchField === 'escala' ? styles.highlightRow : ''}>
+                {highlightText(m.escala, searchValue, 'escala')}
+              </span>
+              <br />
+
+              <strong className={styles.metaLabel}>Material</strong>:
+              <span className={searchField === 'material' ? styles.highlightRow : ''}>
+                {highlightText(m.material, searchValue, 'material')}
+              </span>
+              <br />
+
+              <strong className={styles.metaLabel}>Marca da Resina/Filamento</strong>:
+              <span className={searchField === 'marcaResina' ? styles.highlightRow : ''}>
+                {highlightText(m.marca, searchValue, 'marcaResina')}
+              </span>
+              <br />
+
+              <strong className={styles.metaLabel}>Altura</strong>:
+              <span className={searchField === 'altura' ? styles.highlightRow : ''}>
+                {highlightText(m.altura, searchValue, 'altura')}
+              </span> cm
+              <br />
+
               <strong className={styles.metaLabel}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
             </div>
 

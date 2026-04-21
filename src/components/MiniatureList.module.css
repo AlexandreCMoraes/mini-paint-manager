@@ -37,12 +37,19 @@
 .searchRow {
   display: flex;
   gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchFieldControl {
+  min-width: 170px;
 }
 
 .searchInput {
   padding: 8px;
-  width: 100%;
-  max-width: 340px;
+  width: 220px;
+  max-width: 220px;
+  flex: 0 1 220px;
   border-radius: 6px;
   border: 1px solid var(--color-primary-button, #00ffcc);
   background: rgba(26, 26, 46, 0.8);
@@ -84,6 +91,36 @@
 .metaLabel {
   text-decoration: underline;
 }
+
+/* Texto destacado (palavra buscada) */
+.highlightText {
+  color: #00ffcc;
+  font-weight: bold;
+  background-color: rgba(0, 255, 204, 0.15);
+  padding: 0 3px;
+  border-radius: 4px;
+}
+
+/* Campo ativo dentro da sugestão */
+.activeField {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+/* Linha inteira da sugestão quando ativa */
+.activeSuggestion {
+  border-left: 4px solid #00ffcc;
+}
+
+/* Destaque na lista normal */
+.highlightRow {
+  background-color: rgba(0, 255, 204, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
 
 .pagination {
   margin-top: 20px;
