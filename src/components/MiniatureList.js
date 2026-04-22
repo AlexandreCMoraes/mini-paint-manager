@@ -177,9 +177,12 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // Validação especial para escala para colocar apenas números e ":" (para escalas como 1:24)
   // A mesma logica utilizada no cadastro é aplicada aqui
   const handleChange = (e) => handleInputChange(e, editFormData, setEditFormData);
-  // Lógica de paginação - inverte a ordem das miniaturas para mostrar as mais recentes primeiro e 
+  // TODO Lógica de paginação - inverte a ordem das miniaturas para mostrar as mais recentes primeiro e 
   // depois aplica a lógica de paginação
   const miniaturasOrdenadas = miniaturas.slice().reverse();
+  // const miniaturasOrdenadas = [...miniaturas].sort(
+  //   (a, b) => new Date(b.data_criacao) - new Date(a.data_criacao)
+  // );
   // Cálculo dos índices para a paginação
   const indexOfLastItem = page * itemsPerPage;
   // O índice do primeiro item é calculado subtraindo o número de itens por página do índice do último item
@@ -270,8 +273,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       {/* Título da página */}
       <h2 className={styles.title}>{pageTitle}</h2>
 
-      {/* Busca autocomplete somente por nomes */}
-      {/* TODO futura implementacao. Fazer Busca autocomplete por outros campos */}
+      {/* Busca autocomplete  por outros campos */}
       <div className={styles.searchSection}>
         <div className={styles.inputGroup}>
           <label className={styles.searchLabel}>Buscar Miniaturas</label>

@@ -22,9 +22,9 @@ router.get('/', async (req, res) => {
 });
 
 // GET: buscar miniaturas por nome do personagem- endpoint de busca simples
-// TODO GET: buscar miniaturas por qualquer campo- endpoint de busca flexível
+// GET: buscar miniaturas por qualquer campo- endpoint de busca flexível
 router.get('/search', async (req, res) => {
-  //TODO const { search } = req.query;
+  // const { search } = req.query;
   const { search, field = 'nome' } = req.query;
   const allowedFields = ['nome', 'universo', 'escala', 'material', 'marca', 'altura'];
   const normalizedField = allowedFields.includes(field) ? field : 'nome';

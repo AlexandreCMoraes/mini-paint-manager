@@ -161,7 +161,7 @@ export default function MiniaturaForm({ onAdd }) {
         para uma miniatura de 15 cm de altura.'
         />
         <h6 className={styles.helperText}>
-          Para adicionar imagens e editar todos os detalhes, acesse o Dashboard.
+          Para adicionar imagens e editar todos os detalhes, acesse o Dashboard ou clique no botão "Editar no Dashboard" na miniatura após adicioná-la.
         </h6>
         {/* Botao add miniatura form */}
         <Button type='submit' label='Adicionar Miniatura' variant='primary' />

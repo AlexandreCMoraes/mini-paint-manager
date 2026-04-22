@@ -31,7 +31,7 @@
 
 /* Form Group & Input Styles */
 .form-group {
-    margin-bottom: 24px;
+    margin-bottom: 14px;
     position: relative;
 }
 
@@ -358,7 +358,7 @@
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 24px;
-    padding: 20px;
+    padding: 16px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transform: translateY(0);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -388,7 +388,7 @@
 
 .login-header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 18px;
 }
 
 .login-header h2 {
@@ -455,7 +455,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 32px;
+    margin-bottom: 18px;
     flex-wrap: wrap;
     gap: 12px;
 }
@@ -491,7 +491,7 @@
 /* Login Button */
 .login-btn {
     width: 100%;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 /* Divider */
@@ -576,6 +576,7 @@
 /* Signup Link */
 .signup-link {
     text-align: center;
+    margin-top: 8px;
 }
 
 .signup-link p {
