@@ -1,10 +1,13 @@
-import { API_ENDPOINTS, NOTIFICATION_TIMEOUT } from '../config/api';
+import { API_ENDPOINTS, NOTIFICATION_TIMEOUT, getAuthHeaders } from '../config/api';
 
 // Função para deletar miniatura
 export const handleDeleteMiniatura = async (id, onDelete, setMensagemDelete, setSeveridade) => {
     try {
         const res = await fetch(API_ENDPOINTS.MINIATURA_DELETE(id), {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                ...getAuthHeaders()
+            }
         });
 
         if (!res.ok) {
@@ -111,7 +114,13 @@ export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSuces
     try {
         const res = await fetch(API_ENDPOINTS.MINIATURAS, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            // inclui token de autenticação no header para rotas protegidas do backend que 
+            // exigem autenticação para criar novas miniaturas (rota POST /miniaturas é
+            //  protegida) - o token é obtido da função getAuthHeaders que lê o token do 
+            // localStorage e retorna o header Authorization com o token, e é espalhado 
+            // junto com o header Content-Type para garantir que ambos sejam enviados na 
+            // requisição
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify(newMini)
         });
 
@@ -188,7 +197,7 @@ export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagem
     try {
         const res = await fetch(API_ENDPOINTS.MINIATURA_UPDATE(id), {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify(updatedMini)
         });
 

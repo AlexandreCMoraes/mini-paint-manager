@@ -1,13 +1,12 @@
 // API Configuration
 const getApiBaseUrl = () => {
-  // Se há uma variável de ambiente definida, use ela
+  // Se há uma variável de ambiente definida, use ela como base URL da API
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
 
   // Detecta automaticamente o IP do backend baseado no IP atual do frontend
   const currentHost = window.location.hostname;
-  const currentPort = window.location.port;
 
   // Se estamos em localhost, usa localhost:5000
   if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
@@ -19,13 +18,31 @@ const getApiBaseUrl = () => {
 };
 
 const API_BASE_URL = getApiBaseUrl();
+// Chave de armazenamento para dados de autenticação (token, usuário, etc.)
+const AUTH_STORAGE_KEY = 'authData';
 
 // Constantes de timeout para requisições e notificações
 export const REQUEST_TIMEOUT = 5000;
 export const NOTIFICATION_TIMEOUT = 5000;
 
 // Endpoints da API
+export const getAuthToken = () => {
+  try {
+    const authData = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || '{}');
+    return authData.token || null;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getAuthHeaders = () => {
+  const token = getAuthToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const API_ENDPOINTS = {
+  REGISTER: `${API_BASE_URL}/register`,
+  LOGIN: `${API_BASE_URL}/login`,
   MINIATURAS: `${API_BASE_URL}/miniatures`,
   MINIATURA_DELETE: (id) => `${API_BASE_URL}/miniatures/${id}`,
   MINIATURA_UPDATE: (id) => `${API_BASE_URL}/miniatures/${id}`,

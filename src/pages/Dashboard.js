@@ -3,7 +3,7 @@ import ResponsiveAppBar from '../components/AppBar';
 import MiniaturasLista from '../components/MiniatureList';
 import Header from '../components/Header';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
 
 // O componente Dashboard é responsável por exibir a lista de miniaturas 
 // permitindo que o usuário visualize, edite e delete miniaturas com  mais facilidade.
@@ -15,7 +15,12 @@ function Dashboard() {
     // Função para buscar miniaturas do backend e atualizar estado
     const fetchMiniaturas = async () => {
         try {
-            const res = await fetch(API_ENDPOINTS.MINIATURAS);
+            const res = await fetch(API_ENDPOINTS.MINIATURAS,
+                {
+                    headers:
+                        getAuthHeaders()
+                }
+            );
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
             setMiniaturas(data); // atualiza estado

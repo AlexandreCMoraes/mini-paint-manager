@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Login.css';
-import FormUtils from '../../utils/form-utils'; // Importa as funções utilitárias para o formulário
+// Importa as funções utilitárias para o formulário
+import FormUtils from '../../utils/form-utils';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { API_ENDPOINTS } from '../../config/api';
 
 // O componente Login é responsável por renderizar a página de login da 
 // aplicação. Ele inclui um formulário com campos para user, email e senha, 
@@ -39,6 +41,27 @@ const Login = () => {
         return result.isValid;
     };
 
+    const submitToApi = async ({ username, email, password }) => {
+        const endpoint = isSignUp ? API_ENDPOINTS.REGISTER : API_ENDPOINTS.LOGIN;
+        const payload = isSignUp ? { username, email, password } : { username, password };
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Falha ao autenticar');
+        }
+
+        return data;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return;
@@ -50,25 +73,24 @@ const Login = () => {
         if (!validateField('username', username) || !validateField('password', password)) return;
 
         // Se for sign up, valida também o email
+        let email = '';
         if (isSignUp) {
-            const email = e.target.email.value.trim();
+            email = e.target.email.value.trim();
             if (!validateField('email', email)) return;
-        } else {
-            const email = e.target.email?.value?.trim() || username + '@email.com';
         }
 
         setIsSubmitting(true);
+        
         try {
-            const email = isSignUp ? e.target.email.value.trim() : username + '@email.com';
-            await FormUtils.simulateLogin(email, password);
+            const authResponse = await submitToApi({ username, email, password });
+            login({user:authResponse.user, token: authResponse.token});
             setShowSuccess(true);
             navigate('/home');
-            login({ email });
             setTimeout(() => {
                 setShowSuccess(false);
                 formRef.current?.reset();
                 setIsSignUp(false);
-            }, 5000);
+            }, 3000);
         } catch (error) {
             FormUtils.showNotification(error.message, 'error', formRef.current);
         } finally {

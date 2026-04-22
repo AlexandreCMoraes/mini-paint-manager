@@ -4,7 +4,7 @@ import MiniatureForm from '../components/MiniatureForm';
 import MiniatureList from '../components/MiniatureList';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
 
 function Home() {
   const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
@@ -12,7 +12,11 @@ function Home() {
   // Função para buscar miniaturas do backend e atualizar estado
   const fetchMiniaturas = async () => {
     try {
-      const res = await fetch(API_ENDPOINTS.MINIATURAS);
+      const res = await fetch(API_ENDPOINTS.MINIATURAS,
+        {
+          headers:
+            getAuthHeaders()
+        }); // inclui token de autenticação
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setMiniaturas(data); // atualiza estado

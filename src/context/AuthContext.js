@@ -1,32 +1,48 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Cria o contexto de autenticação
 const AuthContext = createContext();
 
 // Provider que envolve o app App.js
+const AUTH_STORAGE_KEY = 'authData';
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // { email: "exemplo@x.com", id: 1 }
+  const [token, setToken] = useState(null); // token de autenticação
 
   // Função para login
-  const login = (userData) => {
+  const login = ({ user: userData, token: jwtToken }) => {
     setUser(userData);
-    localStorage.setItem('loggedUser', JSON.stringify(userData)); // para manter após refresh
+    setToken(jwtToken);
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ user: userData, token: jwtToken })); // para manter após refresh
   };
 
   // Função para logout que tem que ser chamada no AppBar
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('loggedUser');
+    setToken(null);
+    localStorage.removeItem(AUTH_STORAGE_KEY);
   };
 
-  // Carregar usuário do sessionStorage se recarregar página (para manter login após refresh do navegador)
-  React.useEffect(() => {
-    const savedUser = sessionStorage.getItem('loggedUser');
-    if (savedUser) setUser(JSON.parse(savedUser));
+  // Carregar usuário do localStorage se recarregar página (para manter login após 
+  // refresh do navegador)
+  useEffect(() => {
+    const savedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!savedAuth) return;
+
+    try {
+      const parsed = JSON.parse(savedAuth);
+      if (parsed?.user && parsed?.token) {
+        setUser(parsed.user);
+        setToken(parsed.token);
+      }
+    } catch (error) {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+    }
   }, []);
-  // Valor do contexto que será acessível em toda a aplicação 
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: Boolean(token), login, logout }}>
       {children}
     </AuthContext.Provider>
   );
