@@ -11,7 +11,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturesActions';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
 
 // Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
 // consistência e facilitar futuras atualizações
@@ -212,13 +212,17 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
         const apiSearchField = API_FIELD_BY_SEARCH_FIELD[searchField] || 'nome';
         // Busca no backend usando o endpoint de busca simples, que retorna miniaturas
         const response = await fetch(
-          `${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchValue)}&field=${encodeURIComponent(apiSearchField)}`
-        );
+          `${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchValue)}&field=${encodeURIComponent(apiSearchField)}`,
+          {
+            headers: {
+              ...getAuthHeaders()
+            }
+          });
         if (!response.ok) {
           throw new Error(`HTTP status ${response.status}`);
         }
         const data = await response.json();
-        setSearchResults(data);
+        setSearchResults(Array.isArray(data) ? data : []); // garantir que seja um array, mesmo que o backend retorne algo inesperado
       } catch (err) {
         console.error('Erro na busca:', err);
         setSearchResults([]);

@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const os = require('os');
+const path = require('path');
+const fs = require('fs');
 const miniaturesRouter = require('./routes/miniatures');
 const authRouter = require('./routes/auth');
 console.log('Auth router loaded:', typeof authRouter);
@@ -37,9 +39,40 @@ app.use('/auth', authRouter);
 app.use('/miniatures', miniaturesRouter);
 
 // Teste simples
-app.get('/', (req, res) => {
-  res.send('Backend funcionando!');
+// app.get('/', (req, res) => {
+//   res.send('Backend funcionando!');
+// });
+
+// Health-check simples para validar que a API está no ar.
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'mini-paint-manager-api',
+    message: 'API funcionando!',
+  });
 });
+
+// Em deploy conjunto (frontend + backend na mesma URL), o backend pode
+// servir os arquivos estáticos do build React para evitar páginas em branco
+// ou respostas de fallback incorretas na rota raiz.
+const frontendBuildPath = path.resolve(__dirname, '..', 'build');
+const hasFrontendBuild = fs.existsSync(path.join(frontendBuildPath, 'index.html'));
+
+if (hasFrontendBuild) {
+  app.use(express.static(frontendBuildPath));
+
+  app.get(/^\/(?!auth|miniatures).*/, (req, res) => {
+    res.sendFile(path.join(frontendBuildPath, 'index.html'));
+  });
+
+  console.log(`Frontend build detectado em: ${frontendBuildPath}`);
+} else {
+  console.warn(
+    `Build do frontend não encontrado em ${frontendBuildPath}. ` +
+    'Se quiser servir frontend e backend juntos, execute "npm run build" na raiz do projeto.'
+  );
+}
+
 
 // Iniciar servidor na porta especificada, e exibir mensagens de log para indicar que o 
 // servidor está rodando e acessível na rede local, além de verificar se a variável de 
