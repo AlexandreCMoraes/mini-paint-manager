@@ -108,7 +108,8 @@ function ResponsiveAppBar() {
                     handleCloseNavMenu();
                     if (page === 'Logout') {
                       logout();
-                      navigate('/login');
+                      // Forçar reload da página para garantir que o AuthContext seja reinicializado
+                      window.location.href = '/login';
                     } else if (page === 'Dashboard') {
                       navigate('/dashboard');
                     } else if (page === 'Home') {
@@ -158,7 +159,8 @@ function ResponsiveAppBar() {
                 onClick={() => {
                   if (page === 'Logout') {
                     logout(); // limpa usuário do contexto e localStorage
-                    navigate('/login'); // redireciona para login
+                    // Forçar reload da página para garantir que o AuthContext seja reinicializado
+                    window.location.href = '/login';
                   } else if (page === 'Dashboard') {
                     navigate('/dashboard');
                   } else if (page === 'Home') {

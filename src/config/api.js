@@ -41,8 +41,9 @@ export const getAuthHeaders = () => {
 };
 
 export const API_ENDPOINTS = {
-  REGISTER: `${API_BASE_URL}/register`,
-  LOGIN: `${API_BASE_URL}/login`,
+  BASE_URL: API_BASE_URL,
+  REGISTER: `${API_BASE_URL}/auth/register`,
+  LOGIN: `${API_BASE_URL}/auth/login`,
   MINIATURAS: `${API_BASE_URL}/miniatures`,
   MINIATURA_DELETE: (id) => `${API_BASE_URL}/miniatures/${id}`,
   MINIATURA_UPDATE: (id) => `${API_BASE_URL}/miniatures/${id}`,

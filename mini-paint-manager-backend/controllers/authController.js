@@ -125,7 +125,69 @@ const login = async (req, res) => {
     }
 };
 
+// Controlador para verificar se um email existe no sistema (usado no forgot password)
+const checkEmail = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: 'Email é obrigatório' });
+    }
+
+    try {
+        const result = await pool.query(
+            'SELECT id FROM users WHERE email = $1 LIMIT 1',
+            [email]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        return res.status(200).json({ message: 'Email found' });
+    } catch (error) {
+        console.error('Erro ao verificar email:', error);
+        return res.status(500).json({ message: 'Erro interno ao verificar email' });
+    }
+};
+
+// Controlador para reset de senha (forgot password)
+const forgotPassword = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email e password são obrigatórios' });
+    }
+
+    try {
+        // Verificar se o email existe
+        const userCheck = await pool.query(
+            'SELECT id FROM users WHERE email = $1 LIMIT 1',
+            [email]
+        );
+
+        if (userCheck.rowCount === 0) {
+            return res.status(404).json({ message: 'Email not found' });
+        }
+
+        // Hash da nova senha
+        const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+
+        // Atualizar a senha
+        await pool.query(
+            'UPDATE users SET password_hash = $1 WHERE email = $2',
+            [passwordHash, email]
+        );
+
+        return res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Erro ao resetar senha:', error);
+        return res.status(500).json({ message: 'Erro interno ao resetar senha' });
+    }
+};
+
 module.exports = {
     register,
     login,
+    checkEmail,
+    forgotPassword,
 };

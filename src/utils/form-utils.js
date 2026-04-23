@@ -69,7 +69,57 @@ const FormUtils = {
     },
 
     showNotification: (message, type = 'info', container = null) => {
-        alert(`${type.toUpperCase()}: ${message}`);
+        // Cria uma notificação temporária usando Material-UI Snackbar
+        const notificationContainer = document.createElement('div');
+        notificationContainer.id = 'temp-notification';
+        notificationContainer.style.position = 'fixed';
+        notificationContainer.style.top = '20px';
+        notificationContainer.style.left = '50%';
+        notificationContainer.style.transform = 'translateX(-50%)';
+        notificationContainer.style.zIndex = '9999';
+
+        // Estilos para a notificação
+        const severityColors = {
+            success: '#4caf50',
+            error: '#f44336',
+            warning: '#ff9800',
+            info: '#2196f3'
+        };
+
+        notificationContainer.innerHTML = `
+            <div style="
+                background: ${severityColors[type] || severityColors.info};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                font-family: 'Roboto', sans-serif;
+                font-size: 14px;
+                max-width: 400px;
+                text-align: center;
+                animation: slideDown 0.3s ease-out;
+            ">
+                ${message}
+            </div>
+            <style>
+                @keyframes slideDown {
+                    from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+                }
+            </style>
+        `;
+
+        document.body.appendChild(notificationContainer);
+
+        // Remove após 5 segundos
+        setTimeout(() => {
+            if (notificationContainer.parentNode) {
+                notificationContainer.style.animation = 'slideDown 0.3s ease-in reverse';
+                setTimeout(() => {
+                    document.body.removeChild(notificationContainer);
+                }, 300);
+            }
+        }, 5000);
     },
 
     simulateLogin: (email, password) => {

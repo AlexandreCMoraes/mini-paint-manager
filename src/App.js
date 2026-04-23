@@ -17,12 +17,29 @@ import theme from "./styles/theme"; //  tema atual
 // usando o componente PrivateRoute. Ele também inclui uma rota para lidar com páginas 
 // não encontradas.
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Mostrar loading enquanto verifica autenticação
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, rgba(15, 12, 41, 0.8), rgba(48, 43, 99, 0.8), rgba(36, 36, 62, 0.8))',
+        color: 'white',
+        fontSize: '18px'
+      }}>
+        Carregando...
+      </div>
+    );
+  }
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={isAuthenticated ? '/home' : '/login'} />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />} />
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/home" replace /> : <Login />} />
       <Route path="/home" element={<PrivateRoute isLoggedIn={isAuthenticated}><Home /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute isLoggedIn={isAuthenticated}><Profile /></PrivateRoute>} />
       <Route path="/dashboard" element={<PrivateRoute isLoggedIn={isAuthenticated}><Dashboard /></PrivateRoute>} />

@@ -9,6 +9,7 @@ const AUTH_STORAGE_KEY = 'authData';
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // { email: "exemplo@x.com", id: 1 }
   const [token, setToken] = useState(null); // token de autenticação
+  const [isLoading, setIsLoading] = useState(true); // estado de carregamento
 
   // Função para login
   const login = ({ user: userData, token: jwtToken }) => {
@@ -22,27 +23,22 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    // Limpar também qualquer outro dado relacionado ao usuário
+    localStorage.clear();
   };
 
   // Carregar usuário do localStorage se recarregar página (para manter login após 
-  // refresh do navegador)
+  // refresh do navegador) - DESABILITADO para sempre começar na página de login
   useEffect(() => {
-    const savedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!savedAuth) return;
-
-    try {
-      const parsed = JSON.parse(savedAuth);
-      if (parsed?.user && parsed?.token) {
-        setUser(parsed.user);
-        setToken(parsed.token);
-      }
-    } catch (error) {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
+    // Sempre começar deslogado ao iniciar o projeto
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    setUser(null);
+    setToken(null);
+    setIsLoading(false); // Finalizar carregamento
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: Boolean(token), login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: Boolean(token), isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

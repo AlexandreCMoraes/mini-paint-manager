@@ -5,12 +5,16 @@ import MiniatureList from '../components/MiniatureList';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
 import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import { useAuth } from '../context/AuthContext';
 
 function Home() {
   const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
+  const { isAuthenticated } = useAuth();
 
   // Função para buscar miniaturas do backend e atualizar estado
   const fetchMiniaturas = async () => {
+    if (!isAuthenticated) return; // Só busca se estiver autenticado
+
     try {
       const res = await fetch(API_ENDPOINTS.MINIATURAS,
         {
@@ -25,7 +29,7 @@ function Home() {
     }
   };
 
-  useEffect(() => { fetchMiniaturas(); }, []); // roda apenas uma vez ao abrir app
+  useEffect(() => { fetchMiniaturas(); }, [isAuthenticated]); // roda quando autenticação muda
 
   // Função para adicionar nova miniatura na lista 
   const handleAdd = (newMini) => {

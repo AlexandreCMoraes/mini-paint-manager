@@ -4,6 +4,7 @@ import MiniaturasLista from '../components/MiniatureList';
 import Header from '../components/Header';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import { useAuth } from '../context/AuthContext';
 
 // O componente Dashboard é responsável por exibir a lista de miniaturas 
 // permitindo que o usuário visualize, edite e delete miniaturas com  mais facilidade.
@@ -11,9 +12,12 @@ import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
 // ações do usuário.
 function Dashboard() {
     const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
+    const { isAuthenticated } = useAuth();
 
     // Função para buscar miniaturas do backend e atualizar estado
     const fetchMiniaturas = async () => {
+        if (!isAuthenticated) return; // Só busca se estiver autenticado
+
         try {
             const res = await fetch(API_ENDPOINTS.MINIATURAS,
                 {
@@ -29,7 +33,7 @@ function Dashboard() {
         }
     };
 
-    useEffect(() => { fetchMiniaturas(); }, []); // roda apenas uma vez ao abrir app
+    useEffect(() => { fetchMiniaturas(); }, [isAuthenticated]); // roda quando autenticação muda
 
     // Quando deletar
     const handleDelete = (id) => {

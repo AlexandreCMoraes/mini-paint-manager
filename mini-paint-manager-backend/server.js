@@ -4,6 +4,7 @@ const cors = require('cors');
 const os = require('os');
 const miniaturesRouter = require('./routes/miniatures');
 const authRouter = require('./routes/auth');
+console.log('Auth router loaded:', typeof authRouter);
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 5000;
@@ -32,7 +33,7 @@ app.use(express.json());
 
 // Rotas do aplicativo, organizadas em arquivos separados para autenticação e operações 
 // de miniaturas.
-app.use('/', authRouter);
+app.use('/auth', authRouter);
 app.use('/miniatures', miniaturesRouter);
 
 // Teste simples
