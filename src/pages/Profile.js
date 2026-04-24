@@ -1,28 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
 import Header from '../components/Header';
 import Button from '../components/Buttons/Button';
+import { useAuth } from '../context/AuthContext';
 
 function Profile() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+
+  // Snapshot inicial para o botão cancelar restaurar o que veio da sessão
+  const [initialData, setInitialData] = useState({ nome: '', email: '' });
+
+  useEffect(() => {
+    const nomeUsuario = user?.username || '';
+    const emailUsuario = user?.email || '';
+
+    setNome(nomeUsuario);
+    setEmail(emailUsuario);
+    setSenha('');
+    setInitialData({ nome: nomeUsuario, email: emailUsuario });
+  }, [user]);
+
 
   const handleSalvar = (event) => {
     event.preventDefault();
   };
 
   const handleCancelar = () => {
-    setNome('');
-    setEmail('');
+    setNome(initialData.nome);
+    setEmail(initialData.email);
     setSenha('');
     navigate('/home');
   };
 
   const handleDeleteConta = () => {
+  };
+
+  const handeMudarSenha = () => {
   };
 
   return (
@@ -76,8 +95,9 @@ function Profile() {
               label="Salvar"
               variant="primary"
             />
-            <Button onCancel={handleCancelar} label="Cancelar" variant='neutral'/>
-            <Button onDelete={handleDeleteConta} label="Deletar conta" variant='danger'/>
+            <Button onClick={handleCancelar} label="Cancelar" variant='neutral' />
+            <Button onClick={handleDeleteConta} label="Deletar conta" variant='danger' />
+            <Button onClick={handeMudarSenha} label="Mudar senha" variant='secondary' />
           </div>
         </form>
       </div>

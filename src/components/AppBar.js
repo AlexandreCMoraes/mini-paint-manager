@@ -14,16 +14,28 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 
 const pages = ['Home', 'Dashboard', 'Logout', 'Profile'];
-// O componente AppBar é responsável por renderizar a barra de navegação no topo da aplicação. O componente 
-// integra a funcionalidade de logout, permitindo que o usuário saia da aplicação e seja 
-// redirecionado para a página de login.
+// O componente AppBar é responsável por renderizar a barra de navegação no topo da aplicação.
+// Ele integra a funcionalidade de logout e navegação principal.
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const displayName = user?.username || user?.email || 'usuário';
+  const hora = new Date().getHours();
+  let saudacao = '';
+  if (hora >= 5 && hora < 12) {
+    saudacao = 'Bom dia';
+  } else if (hora >= 12 && hora < 18) {
+    saudacao = 'Boa tarde';
+  } else if (hora >= 18 && hora < 24) {
+    saudacao = 'Boa noite';
+  } else {
+    saudacao = 'Boa madrugada';
+  }
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -207,6 +219,18 @@ function ResponsiveAppBar() {
 
             </Menu>
           </Box>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              display: { xs: 'none', md: 'block' },
+              color: '#b2fff0',
+              fontWeight: 700,
+              ml: 2,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {saudacao}, {displayName}. Bora pintar?
+          </Typography>
         </Toolbar>
       </Container>
     </AppBar>

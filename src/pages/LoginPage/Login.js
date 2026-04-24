@@ -6,6 +6,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_ENDPOINTS } from '../../config/api';
 
+// Constante para armazenar as credenciais lembradas no localStorage
+const REMEMBER_CREDENTIALS_KEY = 'rememberedCredentials';
+
 // O componente Login é responsável por renderizar a página de login da 
 // aplicação. Ele inclui um formulário com campos para user, email e senha, 
 // validação de entrada, animações de foco e feedback visual para o 
@@ -25,6 +28,10 @@ const Login = () => {
     const formRef = useRef(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    // Estados para os valores dos campos do formulário
+    const [usernameValue, setUsernameValue] = useState('');
+    const [passwordValue, setPasswordValue] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
 
     // Adiciona animações e configurações de rótulos flutuantes ao 
     // montar o componente
@@ -33,6 +40,25 @@ const Login = () => {
         FormUtils.setupFloatingLabels(formRef.current);
         FormUtils.addSharedAnimations();
     }, []);
+
+    // Carrega as credenciais lembradas do localStorage ao montar o componente e
+    // preenche os campos do formulário se as credenciais existirem. Isso permite 
+    // que o usuário tenha uma experiência mais fluida ao retornar à página de login, 
+    // evitando a necessidade de digitar suas credenciais novamente se tiver optado por 
+    // lembrar delas.
+    useEffect(() => {
+        try {
+            const remembered = JSON.parse(localStorage.getItem(REMEMBER_CREDENTIALS_KEY) || '{}');
+            if (remembered.username && remembered.password) {
+                setUsernameValue(remembered.username);
+                setPasswordValue(remembered.password);
+                setRememberMe(true);
+            }
+        } catch (error) {
+            localStorage.removeItem(REMEMBER_CREDENTIALS_KEY);
+        }
+    }, []);
+
 
     const validateField = (fieldName, value, formElement = null) => {
         const validators = {
@@ -87,22 +113,22 @@ const Login = () => {
                 // Primeiro passo: validar email
                 const email = e.target.email.value.trim();
                 if (!validateField('email', email)) return;
-                
+
                 // Aqui vamos validar se o email existe no backend
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_ENDPOINTS.BASE_URL}/auth/check-email`, {
+                    const response = await fetch(API_ENDPOINTS.CHECK_EMAIL, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ email }),
                     });
-                    
+
                     if (!response.ok) {
                         throw new Error('Email not found');
                     }
-                    
+
                     // Email existe, passar para o próximo passo
                     setForgotPasswordStep(2);
                 } catch (error) {
@@ -116,24 +142,32 @@ const Login = () => {
                 const email = e.target.email.value.trim();
                 const password = e.target.password.value.trim();
                 const confirmPassword = e.target.confirmPassword.value.trim();
-                
+
                 if (!validateField('password', password) || !validateField('confirmPassword', confirmPassword, formRef.current)) return;
-                
+
                 setIsSubmitting(true);
                 try {
-                    const response = await fetch(`${API_ENDPOINTS.BASE_URL}/auth/forgot-password`, {
+                    const response = await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({ email, password }),
                     });
-                    
+
                     if (!response.ok) {
                         throw new Error('Failed to reset password');
                     }
-                    
+
                     setIsForgotPassword(false);
+                    // Se o usuário marcou "Remember me", limpar as credenciais 
+                    // lembradas para evitar confusão na próxima vez que acessar a 
+                    // página de login, já que a senha foi alterada e as credenciais
+                    //  antigas não serão mais válidas.
+                    if (!rememberMe) {
+                        setUsernameValue('');
+                        setPasswordValue('');
+                    }
                     setForgotPasswordStep(1);
                     setShowSuccess(true);
                     setTimeout(() => {
@@ -149,8 +183,8 @@ const Login = () => {
             }
         }
 
-        const username = e.target.username.value.trim();
-        const password = e.target.password.value.trim();
+        const username = usernameValue.trim();
+        const password = passwordValue.trim();
 
         // Validação de username e password
         if (!validateField('username', username) || !validateField('password', password)) return;
@@ -163,10 +197,18 @@ const Login = () => {
         }
 
         setIsSubmitting(true);
-        
+
         try {
             const authResponse = await submitToApi({ username, email, password });
-            login({user:authResponse.user, token: authResponse.token});
+            login({ user: authResponse.user, token: authResponse.token });
+            // Se o usuário marcou "Remember me", armazenar as credenciais no 
+            // localStorage para pré-preenchimento na próxima visita à página de
+            //  login, caso contrário, garantir que nenhuma credencial seja armazenada.
+            if (rememberMe) {
+                localStorage.setItem(REMEMBER_CREDENTIALS_KEY, JSON.stringify({ username, password }));
+            } else {
+                localStorage.removeItem(REMEMBER_CREDENTIALS_KEY);
+            }
             setShowSuccess(true);
             navigate('/home');
             setTimeout(() => {
@@ -174,6 +216,10 @@ const Login = () => {
                 formRef.current?.reset();
                 setIsSignUp(false);
                 setIsForgotPassword(false);
+                if (!rememberMe) {
+                    setUsernameValue('');
+                    setPasswordValue('');
+                }
             }, 3000);
         } catch (error) {
             FormUtils.showNotification(error.message, 'error', formRef.current);
@@ -187,14 +233,14 @@ const Login = () => {
             <div className="login-card">
                 <div className="login-header">
                     <h2>
-                        {isForgotPassword ? 
-                         (forgotPasswordStep === 1 ? 'Reset Password' : 'Set New Password') : 
-                         isSignUp ? 'Create Account' : 'Welcome Back'}
+                        {isForgotPassword ?
+                            (forgotPasswordStep === 1 ? 'Reset Password' : 'Set New Password') :
+                            isSignUp ? 'Create Account' : 'Welcome Back'}
                     </h2>
                     <p>
-                        {isForgotPassword ? 
-                         (forgotPasswordStep === 1 ? 'Enter your email address' : 'Enter your new password') :
-                         isSignUp ? 'Sign up for a new account' : 'Sign in to your account'}
+                        {isForgotPassword ?
+                            (forgotPasswordStep === 1 ? 'Enter your email address' : 'Enter your new password') :
+                            isSignUp ? 'Sign up for a new account' : 'Sign in to your account'}
                     </p>
                 </div>
 
@@ -217,7 +263,7 @@ const Login = () => {
                             <>
                                 {/* EMAIL (HIDDEN) PARA MANTER NO FORM */}
                                 <input type="hidden" name="email" value={formRef.current?.querySelector('#email')?.value || ''} />
-                                
+
                                 {/* NEW PASSWORD */}
                                 <div className="form-group">
                                     <div className="input-wrapper password-wrapper">
@@ -257,6 +303,8 @@ const Login = () => {
                             <div className="form-group">
                                 <div className="input-wrapper">
                                     <input type="text" id="username" name="username" required autoComplete="username"
+                                        value={usernameValue}
+                                        onChange={(e) => setUsernameValue(e.target.value)}
                                         onBlur={e => validateField('username', e.target.value)} />
                                     <label htmlFor="username">User</label>
                                     <span className="focus-border"></span>
@@ -281,6 +329,8 @@ const Login = () => {
                             <div className="form-group">
                                 <div className="input-wrapper password-wrapper">
                                     <input type={showPassword ? 'text' : 'password'} id="password" name="password" required
+                                        value={passwordValue}
+                                        onChange={(e) => setPasswordValue(e.target.value)}
                                         autoComplete="current-password"
                                         onBlur={e => validateField('password', e.target.value)} />
                                     <label htmlFor="password">Password</label>
@@ -299,7 +349,8 @@ const Login = () => {
                     {!isForgotPassword && (
                         <div className="form-options">
                             <label className="remember-wrapper">
-                                <input type="checkbox" id="remember" name="remember" />
+                                <input type="checkbox" id="remember" name="remember"
+                                    checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
                                 <span className="checkbox-label">
                                     <span className="checkmark"></span>
                                     Remember me
@@ -311,9 +362,9 @@ const Login = () => {
 
                     <button type="submit" className={`login-btn btn ${isSubmitting ? 'loading' : ''}`}>
                         <span className="btn-text">
-                            {isForgotPassword ? 
-                             (forgotPasswordStep === 1 ? 'Continue' : 'Change Password') : 
-                             isSignUp ? 'Sign Up' : 'Sign In'}
+                            {isForgotPassword ?
+                                (forgotPasswordStep === 1 ? 'Continue' : 'Change Password') :
+                                isSignUp ? 'Sign Up' : 'Sign In'}
                         </span>
                         <span className="btn-loader"></span>
                     </button>

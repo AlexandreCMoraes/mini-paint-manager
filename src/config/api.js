@@ -44,6 +44,8 @@ export const API_ENDPOINTS = {
   BASE_URL: API_BASE_URL,
   REGISTER: `${API_BASE_URL}/auth/register`,
   LOGIN: `${API_BASE_URL}/auth/login`,
+  CHECK_EMAIL: `${API_BASE_URL}/auth/check-email`,
+  FORGOT_PASSWORD: `${API_BASE_URL}/auth/forgot-password`,
   MINIATURAS: `${API_BASE_URL}/miniatures`,
   MINIATURA_DELETE: (id) => `${API_BASE_URL}/miniatures/${id}`,
   MINIATURA_UPDATE: (id) => `${API_BASE_URL}/miniatures/${id}`,
