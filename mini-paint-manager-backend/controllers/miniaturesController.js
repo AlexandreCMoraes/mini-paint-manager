@@ -12,7 +12,10 @@ const allowedFields = ['nome', 'universo', 'escala', 'material', 'marca', 'altur
 const listMiniatures = async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT * FROM miniaturas WHERE user_id = $1 ORDER BY id ASC',
+            // A consulta SQL foi ajustada para ordenar as miniaturas primeiro pela data de modificação 
+            // (data_modificacao) e, se não houver data de modificação, pela data de criação (data_criacao). 
+            // Isso garante que as miniaturas mais recentemente modificadas ou criadas apareçam primeiro na lista.
+            'SELECT * FROM miniaturas WHERE user_id = $1 ORDER BY COALESCE(data_modificacao, data_criacao) DESC, id DESC',
             [req.user.id]
         );
 
@@ -40,8 +43,8 @@ const searchMiniatures = async (req, res) => {
         }
 
         const query = normalizedField === 'altura'
-            ? 'SELECT * FROM miniaturas WHERE user_id = $1 AND CAST(altura AS TEXT) LIKE $2 ORDER BY id ASC'
-            : `SELECT * FROM miniaturas WHERE user_id = $1 AND LOWER(${normalizedField}) LIKE LOWER($2) ORDER BY id ASC`;
+            ? 'SELECT * FROM miniaturas WHERE user_id = $1 AND CAST(altura AS TEXT) LIKE $2 ORDER BY COALESCE(data_modificacao, data_criacao) DESC, id DESC'
+            : `SELECT * FROM miniaturas WHERE user_id = $1 AND LOWER(${normalizedField}) LIKE LOWER($2) ORDER BY COALESCE(data_modificacao, data_criacao) DESC, id DESC`;
         const params = [req.user.id, `%${search}%`];
         const result = await pool.query(query, params);
 
@@ -78,7 +81,7 @@ const createMiniature = async (req, res) => {
 
     try {
         const result = await pool.query(
-            `INSERT INTO miniaturas (nome, universo, escala, material, marca, altura, user_id, data_criacao)
+            `INSERT INTO miniaturas (nome, universo, escala, material, marca, altura, user_id, data_criacao, data_modificacao)
        VALUES ($1,$2,$3,$4,$5,$6,$7, NOW()) RETURNING *`,
             [nomeDoPersonagem, universo, escala, material, marca, alturaNumerica, req.user.id]
         );
@@ -129,8 +132,10 @@ const updateMiniature = async (req, res) => {
 
     try {
         const result = await pool.query(
+            // A consulta SQL foi ajustada para atualizar a data de modificação (data_modificacao) para a
+            //  data e hora atuais (NOW()) sempre que uma miniatura for atualizada.
             `UPDATE miniaturas
-       SET nome = $1, universo = $2, escala = $3, material = $4, marca = $5, altura = $6
+       SET nome = $1, universo = $2, escala = $3, material = $4, marca = $5, altura = $6, data_modificacao = NOW()
        WHERE id = $7 AND user_id = $8
        RETURNING *`,
             [nomeDoPersonagem, universo, escala, material, marca, alturaNumerica, id, req.user.id]

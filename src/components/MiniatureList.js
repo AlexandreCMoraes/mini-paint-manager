@@ -177,9 +177,19 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // Validação especial para escala para colocar apenas números e ":" (para escalas como 1:24)
   // A mesma logica utilizada no cadastro é aplicada aqui
   const handleChange = (e) => handleInputChange(e, editFormData, setEditFormData);
-  // TODO Lógica de paginação - inverte a ordem das miniaturas para mostrar as mais recentes primeiro e 
-  // depois aplica a lógica de paginação
-  const miniaturasOrdenadas = miniaturas.slice().reverse();
+  // Ordenação por atividade mais recente: prioriza data de modificação e, na ausência, data de criação.
+  // Isso garante que itens recém-editados também apareçam primeiro na lista.
+  const getActivityTimestamp = (mini) => {
+    const rawDate = mini?.data_modificacao || mini?.data_criacao;
+    const parsed = rawDate ? new Date(rawDate).getTime() : 0;
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const miniaturasOrdenadas = [...miniaturas].sort((a, b) => {
+    const diff = getActivityTimestamp(b) - getActivityTimestamp(a);
+    if (diff !== 0) return diff;
+    return Number(b.id || 0) - Number(a.id || 0);
+  });
   // const miniaturasOrdenadas = [...miniaturas].sort(
   //   (a, b) => new Date(b.data_criacao) - new Date(a.data_criacao)
   // );
@@ -190,8 +200,14 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // O array de miniaturas é fatiado para obter apenas os itens que devem ser exibidos na página atual
   const currentItems = miniaturasOrdenadas.slice(indexOfFirstItem, indexOfLastItem);
 
-  // se tiver busca, usa bord results, senão usa paginação
-  const listToRender = searchValue.trim().length > 0 ? searchResults : currentItems;
+  // Se houver busca, também ordena os resultados por atividade mais recente.
+  const sortedSearchResults = [...searchResults].sort((a, b) => {
+    const diff = getActivityTimestamp(b) - getActivityTimestamp(a);
+    if (diff !== 0) return diff;
+    return Number(b.id || 0) - Number(a.id || 0);
+  });
+
+  const listToRender = searchValue.trim().length > 0 ? sortedSearchResults : currentItems;
 
   // Título da página que muda dinamicamente conforme o valor do input de busca e os resultados 
   // encontrados, para dar um feedback visual ao usuário sobre o que está sendo exibido
@@ -412,6 +428,12 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
               <br />
 
               <strong className={styles.metaLabel}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
+              {m.data_modificacao && (
+                <>
+                  <br />
+                  <strong className={styles.metaLabel}>Data de Modificação</strong>: {new Date(m.data_modificacao).toLocaleString('pt-BR')}
+                </>
+              )}
             </div>
 
             {/* BOTÕES EDITAR E DELETAR */}
