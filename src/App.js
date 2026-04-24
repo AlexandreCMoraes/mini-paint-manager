@@ -40,6 +40,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to="/home" replace /> : <Login />} />
+      <Route path="/forgot-password" element={<Login />} />
       <Route path="/home" element={<PrivateRoute isLoggedIn={isAuthenticated}><Home /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute isLoggedIn={isAuthenticated}><Profile /></PrivateRoute>} />
       <Route path="/dashboard" element={<PrivateRoute isLoggedIn={isAuthenticated}><Dashboard /></PrivateRoute>} />

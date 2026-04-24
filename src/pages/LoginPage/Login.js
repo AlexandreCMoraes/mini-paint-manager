@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './Login.css';
 // Importa as funções utilitárias para o formulário
 import FormUtils from '../../utils/form-utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_ENDPOINTS } from '../../config/api';
 
@@ -17,6 +17,7 @@ const REMEMBER_CREDENTIALS_KEY = 'rememberedCredentials';
 // principal da aplicação.
 const Login = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     // Estado para alternar entre login e cadastro
@@ -31,6 +32,7 @@ const Login = () => {
     // Estados para os valores dos campos do formulário
     const [usernameValue, setUsernameValue] = useState('');
     const [passwordValue, setPasswordValue] = useState('');
+    const [emailValue, setEmailValue] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
 
     // Adiciona animações e configurações de rótulos flutuantes ao 
@@ -59,6 +61,24 @@ const Login = () => {
         }
     }, []);
 
+    // Permite entrar direto no passo de redefinição de senha vindo da tela de perfil
+    useEffect(() => {
+        const forgotState = location.state?.forgotPassword;
+        const stepState = location.state?.step;
+        const emailState = (location.state?.email || '').trim();
+
+        if (!forgotState) return;
+
+        setIsSignUp(false);
+        setIsForgotPassword(true);
+        setEmailValue(emailState);
+
+        if (stepState === 2 && emailState) {
+            setForgotPasswordStep(2);
+        } else {
+            setForgotPasswordStep(1);
+        }
+    }, [location.state]);
 
     const validateField = (fieldName, value, formElement = null) => {
         const validators = {
@@ -111,8 +131,7 @@ const Login = () => {
         if (isForgotPassword) {
             if (forgotPasswordStep === 1) {
                 // Primeiro passo: validar email
-                const email = e.target.email.value.trim();
-                if (!validateField('email', email)) return;
+                const email = (emailValue || e.target.email.value || '').trim(); if (!validateField('email', email)) return;
 
                 // Aqui vamos validar se o email existe no backend
                 setIsSubmitting(true);
@@ -130,6 +149,7 @@ const Login = () => {
                     }
 
                     // Email existe, passar para o próximo passo
+                    setEmailValue(email);
                     setForgotPasswordStep(2);
                 } catch (error) {
                     FormUtils.showNotification(error.message, 'error', formRef.current);
@@ -139,7 +159,7 @@ const Login = () => {
                 return;
             } else {
                 // Segundo passo: alterar senha
-                const email = e.target.email.value.trim();
+                const email = (emailValue || e.target.email.value || '').trim();
                 const password = e.target.password.value.trim();
                 const confirmPassword = e.target.confirmPassword.value.trim();
 
@@ -160,6 +180,7 @@ const Login = () => {
                     }
 
                     setIsForgotPassword(false);
+                    setEmailValue('');
                     // Se o usuário marcou "Remember me", limpar as credenciais 
                     // lembradas para evitar confusão na próxima vez que acessar a 
                     // página de login, já que a senha foi alterada e as credenciais
@@ -169,6 +190,7 @@ const Login = () => {
                         setPasswordValue('');
                     }
                     setForgotPasswordStep(1);
+                    setEmailValue('');
                     setShowSuccess(true);
                     setTimeout(() => {
                         setShowSuccess(false);
@@ -216,6 +238,8 @@ const Login = () => {
                 formRef.current?.reset();
                 setIsSignUp(false);
                 setIsForgotPassword(false);
+                setEmailValue('');
+                setEmailValue('');
                 if (!rememberMe) {
                     setUsernameValue('');
                     setPasswordValue('');
@@ -244,7 +268,8 @@ const Login = () => {
                     </p>
                 </div>
 
-                <form ref={formRef} className="login-form" onSubmit={handleSubmit} noValidate autoComplete="off">
+                <form ref={formRef} className="login-form" onSubmit={handleSubmit} noValidate autoComplete="off"
+                    key={isForgotPassword ? `forgot-${forgotPasswordStep}` : 'normal'}>
                     {isForgotPassword ? (
                         forgotPasswordStep === 1 ? (
                             <>
@@ -252,6 +277,8 @@ const Login = () => {
                                 <div className="form-group">
                                     <div className="input-wrapper">
                                         <input type="email" id="email" name="email" required autoComplete="email"
+                                            value={emailValue}
+                                            onChange={(e) => setEmailValue(e.target.value)}
                                             onBlur={e => validateField('email', e.target.value)} />
                                         <label htmlFor="email">Email Address</label>
                                         <span className="focus-border"></span>
@@ -262,7 +289,8 @@ const Login = () => {
                         ) : (
                             <>
                                 {/* EMAIL (HIDDEN) PARA MANTER NO FORM */}
-                                <input type="hidden" name="email" value={formRef.current?.querySelector('#email')?.value || ''} />
+                                {/* <input type="hidden" name="email" value={emailValue || ''} /> */}
+                                <input type="hidden" name="email" value={emailValue || ''} />
 
                                 {/* NEW PASSWORD */}
                                 <div className="form-group">
@@ -317,6 +345,8 @@ const Login = () => {
                                 <div className="form-group">
                                     <div className="input-wrapper">
                                         <input type="email" id="email" name="email" required autoComplete="email"
+                                            value={emailValue}
+                                            onChange={(e) => setEmailValue(e.target.value)}
                                             onBlur={e => validateField('email', e.target.value)} />
                                         <label htmlFor="email">Email Address</label>
                                         <span className="focus-border"></span>
@@ -356,7 +386,8 @@ const Login = () => {
                                     Remember me
                                 </span>
                             </label>
-                            <a href="#" className="forgot-password" onClick={(e) => { e.preventDefault(); setIsForgotPassword(true); setForgotPasswordStep(1); }}>Forgot password?</a>
+                            {/* <a href="#" className="forgot-password" onClick={(e) => { e.preventDefault(); setIsForgotPassword(true); setForgotPasswordStep(1); }}>Forgot password?</a> */}
+                            <a href="#" className="forgot-password" onClick={(e) => { e.preventDefault(); setIsForgotPassword(true); setForgotPasswordStep(1); setEmailValue(''); }}>Forgot password?</a>
                         </div>
                     )}
 
@@ -376,7 +407,8 @@ const Login = () => {
                         {isForgotPassword ? (
                             <>
                                 {forgotPasswordStep === 1 ? (
-                                    <>Remember your password? <a href="#" onClick={(e) => { e.preventDefault(); setIsForgotPassword(false); setForgotPasswordStep(1); }}>Sign in</a></>
+                                    // <>Remember your password? <a href="#" onClick={(e) => { e.preventDefault(); setIsForgotPassword(false); setForgotPasswordStep(1); setEmailValue(''); }}>Sign in</a></>
+                                    <>Remember your password? <a href="#" onClick={(e) => { e.preventDefault(); setIsForgotPassword(false); setForgotPasswordStep(1); setEmailValue(''); }}>Sign in</a></>
                                 ) : (
                                     <>Wrong email? <a href="#" onClick={(e) => { e.preventDefault(); setForgotPasswordStep(1); }}>Go back</a></>
                                 )}

@@ -42,6 +42,13 @@ function Profile() {
   };
 
   const handeMudarSenha = () => {
+    navigate('/forgot-password', {
+      state: {
+        forgotPassword: true,
+        step: 2,
+        email,
+      },
+    });
   };
 
   return (
