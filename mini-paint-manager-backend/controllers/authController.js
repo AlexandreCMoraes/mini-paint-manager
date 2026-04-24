@@ -97,7 +97,7 @@ const login = async (req, res) => {
 
     try {
         const result = await pool.query(
-            'SELECT id, username, email, password_hash, created_at FROM users WHERE username = $1 LIMIT 1',
+            'SELECT id, username, email, password_hash, created_at, ativo FROM users WHERE username = $1 LIMIT 1',
             [username]
         );
 
@@ -110,6 +110,13 @@ const login = async (req, res) => {
 
         if (!passwordIsValid) {
             return res.status(401).json({ message: 'Senha inválida' });
+        }
+
+        if (!user.ativo) {
+            return res.status(403).json({
+                message: 'Conta desativada',
+                reactivatable: true,
+            });
         }
 
         const token = createToken(user);
