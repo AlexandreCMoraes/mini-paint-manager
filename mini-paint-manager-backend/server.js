@@ -6,7 +6,9 @@ const path = require('path');
 const fs = require('fs');
 const miniaturesRouter = require('./routes/miniatures');
 const authRouter = require('./routes/auth');
+const usersRouter = require('./routes/users');
 console.log('Auth router loaded:', typeof authRouter);
+console.log('Users router loaded:', typeof usersRouter);
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 5000;
@@ -37,6 +39,7 @@ app.use(express.json());
 // de miniaturas.
 app.use('/auth', authRouter);
 app.use('/miniatures', miniaturesRouter);
+app.use('/users', usersRouter);
 
 // Teste simples
 // app.get('/', (req, res) => {
@@ -61,7 +64,7 @@ const hasFrontendBuild = fs.existsSync(path.join(frontendBuildPath, 'index.html'
 if (hasFrontendBuild) {
   app.use(express.static(frontendBuildPath));
 
-  app.get(/^\/(?!auth|miniatures).*/, (req, res) => {
+  app.get(/^\/(?!auth|miniatures|users}).*/, (req, res) => {
     res.sendFile(path.join(frontendBuildPath, 'index.html'));
   });
 

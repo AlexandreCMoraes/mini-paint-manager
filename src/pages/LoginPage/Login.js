@@ -34,6 +34,7 @@ const Login = () => {
     const [passwordValue, setPasswordValue] = useState('');
     const [emailValue, setEmailValue] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+    const [accountDeactivatedMessage, setAccountDeactivatedMessage] = useState('');
 
     // Adiciona animações e configurações de rótulos flutuantes ao 
     // montar o componente
@@ -79,6 +80,20 @@ const Login = () => {
             setForgotPasswordStep(1);
         }
     }, [location.state]);
+
+    // Exibe uma mensagem de conta desativada se o usuário for redirecionado para a página de login 
+    // após desativar sua conta. A mensagem é exibida usando o sistema de notificações do projeto, 
+    // garantindo uma experiência consistente para o usuário. Após exibir a mensagem, o estado é limpo
+    //  para evitar que a notificação apareça novamente em visitas subsequentes à página de login.
+    useEffect(() => {
+        if (!location.state?.accountDeactivated) return;
+
+        setAccountDeactivatedMessage(
+            location.state.accountDeactivated || 'Sua conta foi desativada com sucesso.'
+        );
+        navigate(location.pathname, { replace: true, state: {} });
+    }, [location.pathname, location.state, navigate]);
+
 
     const validateField = (fieldName, value, formElement = null) => {
         const validators = {
@@ -256,6 +271,11 @@ const Login = () => {
         <div className="login-container-body">
             <div className="login-card">
                 <div className="login-header">
+                    {accountDeactivatedMessage && (
+                        <div className="deactivated-message" role="status">
+                            {accountDeactivatedMessage}
+                        </div>
+                    )}
                     <h2>
                         {isForgotPassword ?
                             (forgotPasswordStep === 1 ? 'Reset Password' : 'Set New Password') :

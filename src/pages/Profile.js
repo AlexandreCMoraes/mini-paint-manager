@@ -4,14 +4,18 @@ import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
 import Header from '../components/Header';
 import Button from '../components/Buttons/Button';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useAuth } from '../context/AuthContext';
+import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
 
 function Profile() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   // Snapshot inicial para o botão cancelar restaurar o que veio da sessão
   const [initialData, setInitialData] = useState({ nome: '', email: '' });
@@ -31,6 +35,8 @@ function Profile() {
     event.preventDefault();
   };
 
+  // O botão cancelar simplesmente restaura os valores para o que veio da sessão, sem fazer nenhuma 
+  // chamada à API, e redireciona para a página inicial.
   const handleCancelar = () => {
     setNome(initialData.nome);
     setEmail(initialData.email);
@@ -38,7 +44,46 @@ function Profile() {
     navigate('/home');
   };
 
-  const handleDeleteConta = () => {
+  // O botão de deletar conta faz uma chamada à API para desativar a conta do usuário autenticado, e 
+  // em caso de sucesso, limpa a sessão e redireciona para a página de login com uma mensagem de 
+  // confirmação. Ele também tem um estado de "isDeleting" para evitar múltiplos cliques enquanto a 
+  // requisição está em andamento.
+  const handleDeleteConta = async () => {
+    setOpenDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setOpenDeleteDialog(false);
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      const response = await fetch(API_ENDPOINTS.USER_ME, {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders(),
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao desativar conta');
+      }
+
+      logout();
+      navigate('/login', {
+        replace: true,
+        state: {
+          accountDeactivated: true,
+          accountDeactivatedMessage: 'Sua conta foi desativada com sucesso',
+        },
+      });
+    } catch (error) {
+      console.error('Erro ao desativar conta:', error);
+      window.alert(error.message || 'Não foi possível desativar sua conta. Tente novamente.');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handeMudarSenha = () => {
@@ -103,11 +148,30 @@ function Profile() {
               variant="primary"
             />
             <Button onClick={handleCancelar} label="Cancelar" variant='neutral' />
-            <Button onClick={handleDeleteConta} label="Deletar conta" variant='danger' />
+            <Button onClick={handleDeleteConta} label={isDeleting ? 'Desativando...' : 'Deletar conta'} variant='danger' />
             <Button onClick={handeMudarSenha} label="Mudar senha" variant='secondary' />
           </div>
         </form>
       </div>
+
+      <ConfirmDialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        onConfirm={handleConfirmDelete}
+        title="Desativar Conta"
+        message={
+          <>
+            Tem certeza que deseja desativar sua conta?
+            <br /><br />
+            Você perderá o acesso imediatamente, mas seus dados serão preservados para segurança e histórico.
+          </>
+        }
+        confirmLabel={isDeleting ? 'Desativando...' : 'Confirmar'}
+        cancelLabel="Cancelar"
+        confirmVariant="danger"
+        cancelVariant="neutral"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
