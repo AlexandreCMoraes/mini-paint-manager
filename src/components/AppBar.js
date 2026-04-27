@@ -222,11 +222,12 @@ function ResponsiveAppBar() {
           <Typography
             variant="subtitle2"
             sx={{
-              display: { xs: 'none', md: 'block' },
+              display: { xs: 'flex', md: 'block' },
               color: '#b2fff0',
               fontWeight: 700,
               ml: 2,
               whiteSpace: 'nowrap',
+              fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
             }}
           >
             {saudacao}, {displayName}. Bora pintar?

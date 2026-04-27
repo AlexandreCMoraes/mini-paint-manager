@@ -82,7 +82,7 @@ const createMiniature = async (req, res) => {
     try {
         const result = await pool.query(
             `INSERT INTO miniaturas (nome, universo, escala, material, marca, altura, user_id, data_criacao, data_modificacao)
-       VALUES ($1,$2,$3,$4,$5,$6,$7, NOW()) RETURNING *`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7, NOW(), NOW()) RETURNING *`,
             [nomeDoPersonagem, universo, escala, material, marca, alturaNumerica, req.user.id]
         );
 
