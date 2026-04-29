@@ -5,6 +5,7 @@ import FormUtils from '../../utils/form-utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_ENDPOINTS } from '../../config/api';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 // Constante para armazenar as credenciais lembradas no localStorage
 const REMEMBER_CREDENTIALS_KEY = 'rememberedCredentials';
@@ -35,6 +36,9 @@ const Login = () => {
     const [emailValue, setEmailValue] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [accountDeactivatedMessage, setAccountDeactivatedMessage] = useState('');
+    const [showReactivateDialog, setShowReactivateDialog] = useState(false);
+    const [reactivationEmail, setReactivationEmail] = useState('');
+    const [isReactivationSubmitting, setIsReactivationSubmitting] = useState(false);
 
     // Adiciona animações e configurações de rótulos flutuantes ao 
     // montar o componente
@@ -133,7 +137,9 @@ const Login = () => {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || 'Falha ao autenticar');
+            const error = new Error(data.message || 'Falha ao autenticar');
+            error.payload = data;
+            throw error;
         }
 
         return data;
@@ -237,6 +243,16 @@ const Login = () => {
 
         try {
             const authResponse = await submitToApi({ username, email, password });
+
+            if (authResponse?.reactivatable && authResponse?.message === 'Conta desativada') {
+                setReactivationEmail(authResponse?.email || '');
+                if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                }
+                setShowReactivateDialog(true);
+                return;
+            }
+
             login({ user: authResponse.user, token: authResponse.token });
             // Se o usuário marcou "Remember me", armazenar as credenciais no 
             // localStorage para pré-preenchimento na próxima visita à página de
@@ -261,9 +277,56 @@ const Login = () => {
                 }
             }, 3000);
         } catch (error) {
-            FormUtils.showNotification(error.message, 'error', formRef.current);
+            if (error.message === 'Conta desativada' && error.payload?.reactivatable) {
+                setReactivationEmail(error.payload?.email || '');
+                setShowReactivateDialog(true);
+            } else {
+                FormUtils.showNotification(error.message, 'error', formRef.current);
+            }
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleReactivateRequest = async () => {
+        if (!reactivationEmail || isReactivationSubmitting) return;
+
+        setIsReactivationSubmitting(true);
+        try {
+            let response = await fetch(API_ENDPOINTS.REACTIVATE_REQUEST, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: reactivationEmail }),
+            });
+
+            if (response.status === 404) {
+                response = await fetch(`${API_ENDPOINTS.BASE_URL}/auth/reactivation-request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: reactivationEmail }),
+                });
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Falha ao enviar solicitação de reativação');
+            }
+
+            setShowReactivateDialog(false);
+            FormUtils.showNotification(
+                data.message || 'Email de reativação de conta enviado. Verifique sua caixa de spam também.',
+                data.mailSent ? 'success' : 'error',
+                formRef.current
+            );
+        } catch (error) {
+            FormUtils.showNotification(error.message, 'error', formRef.current);
+        } finally {
+            setIsReactivationSubmitting(false);
         }
     };
 
@@ -457,6 +520,19 @@ const Login = () => {
                     </div>
                 )}
             </div>
+
+
+            <ConfirmDialog
+                open={showReactivateDialog}
+                onClose={() => setShowReactivateDialog(false)}
+                onConfirm={handleReactivateRequest}
+                title="Conta desativada"
+                message="Sua conta está desativada. Deseja receber um email para reativação?"
+                confirmLabel="Reativar conta"
+                cancelLabel="Cancelar"
+                isLoading={isReactivationSubmitting}
+            />
+
         </div>
     );
 };

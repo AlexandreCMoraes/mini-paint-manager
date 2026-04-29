@@ -48,6 +48,7 @@ export const API_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/auth/login`,
   CHECK_EMAIL: `${API_BASE_URL}/auth/check-email`,
   FORGOT_PASSWORD: `${API_BASE_URL}/auth/forgot-password`,
+  REACTIVATE_REQUEST: `${API_BASE_URL}/auth/reactivate-request`,
   USER_ME: `${API_BASE_URL}/users/me`,
   MINIATURAS: `${API_BASE_URL}/miniatures`,
   MINIATURA_DELETE: (id) => `${API_BASE_URL}/miniatures/${id}`,
