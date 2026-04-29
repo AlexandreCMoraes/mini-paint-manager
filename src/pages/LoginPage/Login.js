@@ -145,6 +145,17 @@ const Login = () => {
         return data;
     };
 
+    const openReactivationDialog = (email = '') => {
+        setReactivationEmail(email || '');
+
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
+        setShowReactivateDialog(true);
+    };
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return;

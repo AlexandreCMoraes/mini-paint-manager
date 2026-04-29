@@ -27,8 +27,9 @@ const sanitizeUser = (userRow) => ({
 // para os usuários.
 
 const buildMailTransporter = () => nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
@@ -155,10 +156,10 @@ const login = async (req, res) => {
         }
 
         if (!user.ativo) {
-            return res.status(200).json({
+            return res.status(403).json({
                 message: 'Conta desativada',
                 reactivatable: true,
-                serId: user.id,
+                userId: user.id,
                 deletedAt: user.deletado_em || null,
                 email: user.email,
             });
@@ -274,7 +275,13 @@ const requestReactivation = async (req, res) => {
             console.warn('Não foi possível salvar token de reativação (verifique migração 004):', tokenError.message);
         }
 
-        const mailResult = await sendReactivationEmail({ to: user.email, username: user.username });
+        let mailResult = { sent: false, reason: 'unknown_error' };
+        try {
+            mailResult = await sendReactivationEmail({ to: user.email, username: user.username });
+        } catch (mailError) {
+            console.error('Falha ao enviar email de reativação:', mailError);
+            mailResult = { sent: false, reason: 'send_failure' };
+        }
 
         return res.status(200).json({
             message: mailResult?.sent
