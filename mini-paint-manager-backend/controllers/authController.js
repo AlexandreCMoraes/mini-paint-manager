@@ -13,6 +13,18 @@ const createToken = (user) => jwt.sign(
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
 );
+
+// Função para garantir que a variável de ambiente JWT_SECRET esteja definida, lançando um erro
+//  claro se estiver ausente, para evitar falhas silenciosas na geração de tokens JWT. Essa função é 
+// chamada antes de criar tokens para garantir que a configuração do servidor seja adequada para 
+// autenticação segura.
+const ensureJwtSecret = () => {
+    if (!process.env.JWT_SECRET) {
+        const error = new Error('JWT_SECRET ausente');
+        error.code = 'MISSING_JWT_SECRET';
+        throw error;
+    }
+};
 // Função para sanitizar os dados do usuário antes de enviá-los na resposta, removendo informações sensíveis como o hash da senha
 const sanitizeUser = (userRow) => ({
     id: userRow.id,
@@ -21,20 +33,34 @@ const sanitizeUser = (userRow) => ({
     created_at: userRow.created_at,
 });
 
-// Função para construir o transportador de email usando nodemailer, configurado para
-//  usar o serviço Gmail com autenticação baseada em variáveis de ambiente para 
-// segurança. O transportador é responsável por enviar emails de reativação de conta 
-// para os usuários.
+// Função para construir o transportador de email usando as configurações definidas nas variáveis de
+//  ambiente. Ela suporta tanto a configuração de serviço SMTP pré-definida (como Gmail) quanto a 
+// configuração manual de host, porta e segurança. O transportador é usado para enviar emails de
+//  reativação de conta e reset de senha.
+const buildMailTransporter = () => {
+    const smtpService = process.env.SMTP_SERVICE;
+    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const smtpPort = Number(process.env.SMTP_PORT || 587);
+    const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
+    const smtpUser = (process.env.SMTP_USER || '').trim();
+    const smtpPass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
 
-const buildMailTransporter = () => nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+    return nodemailer.createTransport({
+        ...(smtpService ? { service: smtpService } : {}),
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpSecure,
+        auth: {
+            user: smtpUser,
+            pass: smtpPass,
+        },
+    });
+};
 
+// Função para enviar email de reativação de conta. Ela verifica se as configurações SMTP estão presentes,
+//  constrói o transportador de email, e envia um email para o usuário com instruções para reativar a 
+// conta. A função retorna um objeto indicando se o email foi enviado com sucesso ou se houve um erro, 
+// incluindo o motivo do erro para facilitar o diagnóstico e feedback ao usuário.
 const sendReactivationEmail = async ({ to, username }) => {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
         return { sent: false, reason: 'missing_smtp_config' };
@@ -101,6 +127,7 @@ const register = async (req, res) => {
         );
 
         const user = result.rows[0];
+        ensureJwtSecret();
         const token = createToken(user);
 
         return res.status(201).json({
@@ -156,8 +183,9 @@ const login = async (req, res) => {
         }
 
         if (!user.ativo) {
-            return res.status(403).json({
+            return res.status(200).json({
                 message: 'Conta desativada',
+                requiresReactivation: true,
                 reactivatable: true,
                 userId: user.id,
                 deletedAt: user.deletado_em || null,
@@ -165,6 +193,7 @@ const login = async (req, res) => {
             });
         }
 
+        ensureJwtSecret();
         const token = createToken(user);
 
         return res.status(200).json({
@@ -174,6 +203,9 @@ const login = async (req, res) => {
         });
     } catch (error) {
         console.error('Erro ao autenticar usuário:', error);
+        if (error.code === 'MISSING_JWT_SECRET') {
+            return res.status(500).json({ message: 'Configuração inválida do servidor (JWT_SECRET ausente)' });
+        }
         return res.status(500).json({ message: 'Erro interno ao autenticar usuário' });
     }
 };
@@ -225,13 +257,18 @@ const forgotPassword = async (req, res) => {
         // Hash da nova senha
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-        // Atualizar a senha
+        // Atualizar a senha do usuário e reativar a conta se ela estava desativada
         await pool.query(
-            'UPDATE users SET password_hash = $1 WHERE email = $2',
-            [passwordHash, email]
+            `UPDATE users
+             SET password_hash = $1,
+                 ativo = true,
+                 deletado_em = NULL,
+                 reactivation_token = NULL,
+                 reactivation_token_expires_at = NULL
+             WHERE email = $2`, [passwordHash, email]
         );
 
-        return res.status(200).json({ message: 'Password updated successfully' });
+        return res.status(200).json({ message: 'Password updated successfully. Account reactivated.' });
     } catch (error) {
         console.error('Erro ao resetar senha:', error);
         return res.status(500).json({ message: 'Erro interno ao resetar senha' });
@@ -280,14 +317,29 @@ const requestReactivation = async (req, res) => {
             mailResult = await sendReactivationEmail({ to: user.email, username: user.username });
         } catch (mailError) {
             console.error('Falha ao enviar email de reativação:', mailError);
-            mailResult = { sent: false, reason: 'send_failure' };
+            if (mailError?.code === 'EAUTH' || mailError?.responseCode === 535) {
+                mailResult = { sent: false, reason: 'invalid_smtp_credentials' };
+            } else {
+                mailResult = { sent: false, reason: 'send_failure' };
+            }
         }
+        // Mapeamento de mensagens de resposta para diferentes razões de falha no envio de email, 
+        // permitindo feedback claro ao usuário sobre o status da solicitação de reativação, mesmo 
+        // quando o email não pode ser enviado devido a problemas de configuração ou credenciais SMTP.
+        const responseMessageByReason = {
+            missing_smtp_config: 'Solicitação registrada. SMTP não configurado no servidor.',
+            invalid_smtp_credentials: 'Solicitação registrada. Credenciais SMTP inválidas (verifique App Password do Gmail).',
+            send_failure: 'Solicitação registrada. Não foi possível enviar email agora; tente novamente mais tarde.',
+            unknown_error: 'Solicitação registrada. Não foi possível enviar email agora; tente novamente mais tarde.',
+        };
+
 
         return res.status(200).json({
             message: mailResult?.sent
                 ? 'Email de reativação de conta enviado. Verifique sua caixa de spam também.'
-                : 'Solicitação registrada. Não foi possível enviar email agora; tente novamente mais tarde.',
+                : responseMessageByReason[mailResult?.reason] || responseMessageByReason.unknown_error,
             mailSent: Boolean(mailResult?.sent),
+            reason: mailResult?.reason || 'unknown_error',
         });
     } catch (error) {
         console.error('Erro ao solicitar reativação de conta:', error);
