@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "./App.css";
 import { AuthProvider, useAuth } from "./context/AuthContext"; //  contexto de autenticação
 import Home from "./pages/Home"; //  página do sistema
@@ -18,6 +18,9 @@ import theme from "./styles/theme"; //  tema atual
 // não encontradas.
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const forceLogin = searchParams.get('forceLogin') === '1';
 
   // Mostrar loading enquanto verifica autenticação
   if (isLoading) {
@@ -39,7 +42,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />} />
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/home" replace /> : <Login />} />
+      <Route path="/login" element={isAuthenticated && !forceLogin ? <Navigate to="/home" replace /> : <Login />} />
       <Route path="/forgot-password" element={<Login />} />
       <Route path="/home" element={<PrivateRoute isLoggedIn={isAuthenticated}><Home /></PrivateRoute>} />
       <Route path="/profile" element={<PrivateRoute isLoggedIn={isAuthenticated}><Profile /></PrivateRoute>} />

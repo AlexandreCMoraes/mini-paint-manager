@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './Login.css';
 // Importa as funções utilitárias para o formulário
 import FormUtils from '../../utils/form-utils';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { API_ENDPOINTS } from '../../config/api';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -19,7 +19,8 @@ const REMEMBER_CREDENTIALS_KEY = 'rememberedCredentials';
 const Login = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuth();
+    const { login, logout } = useAuth();
+    const [searchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     // Estado para alternar entre login e cadastro
     const [isSignUp, setIsSignUp] = useState(false);
@@ -47,6 +48,15 @@ const Login = () => {
         FormUtils.setupFloatingLabels(formRef.current);
         FormUtils.addSharedAnimations();
     }, []);
+
+    // Verifica se a URL contém o parâmetro forceLogin=1 e, se presente, executa o logout do usuário.
+    useEffect(() => {
+        const forceLogin = searchParams.get('forceLogin') === '1';
+        if (forceLogin) {
+            logout();
+        }
+    }, [logout, searchParams]);
+
 
     // Carrega as credenciais lembradas do localStorage ao montar o componente e
     // preenche os campos do formulário se as credenciais existirem. Isso permite 

@@ -67,24 +67,35 @@ const sendReactivationEmail = async ({ to, username }) => {
     }
 
     const mailTransporter = buildMailTransporter();
-    const loginUrl = process.env.REACTIVATION_LOGIN_URL || 'http://localhost:3000/login';
+    const loginUrl = process.env.REACTIVATION_LOGIN_URL || 'http://localhost:3000/login?forceLogin=1';
 
     await mailTransporter.sendMail({
         from: process.env.SMTP_USER,
         to,
         subject: 'Solicitação de reativação de conta',
         text: [
+            'Assunto: 👋 Sentimos sua falta no Mini Paint Manager',
+            '',
             `Olá, ${username}!`,
             '',
-            'Sua conta está desativada.',
+            'Notamos que sua conta foi desativada — mas suas miniaturas, cores e histórico continuam salvos com a gente.',
             'Para reativar sua conta, clique no link abaixo:',
             loginUrl,
             '',
-            'Após isso será necessário redefinir sua senha usando Forgot Password para poder acessar sua conta.',
+            '🔐 Por segurança, você precisará redefinir sua senha usando a opção "Forgot Password" após acessar o sistema.',
+            '💡 O que você vai recuperar ao voltar:',
+            '• Suas miniaturas cadastradas  ',
+            '• Suas paletas de cores personalizadas  ',
+            '• Seu histórico de uso e preferências  ',
+            '',
+            'Se você não solicitou essa reativação, pode ignorar este email — sua conta permanecerá desativada.',
+            'Esperamos te ver de volta em breve 🎨',
+            '',
+            ' — Mini Paint Manager'
         ].join('\n'),
     });
 
-    return { sent: true };
+return { sent: true };
 };
 
 // Controlador de autenticação que lida com o registro e login de usuários. Ele inclui validação de 
