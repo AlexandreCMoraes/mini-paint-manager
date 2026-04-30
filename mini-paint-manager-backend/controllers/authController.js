@@ -95,7 +95,58 @@ const sendReactivationEmail = async ({ to, username }) => {
         ].join('\n'),
     });
 
-return { sent: true };
+    return { sent: true };
+};
+
+// Função para enviar email de boas-vindas após o registro de um novo usuário. Ela verifica se as
+// configurações SMTP estão presentes, constrói o transportador de email, e envia um email para o
+//  novo usuário com uma mensagem de boas-vindas e instruções para começar a usar o Mini Paint Manager.
+//  A função retorna um objeto indicando se o email foi enviado com sucesso ou se houve um erro, incluindo
+//  o motivo do erro para facilitar o diagnóstico e feedback ao usuário.
+const sendWelcomeEmail = async ({ to, username }) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        return { sent: false, reason: 'missing_smtp_config' };
+    }
+
+    const mailTransporter = buildMailTransporter();
+    const dashboardUrl = process.env.WELCOME_DASHBOARD_URL || 'http://localhost:3000/dashboard';
+
+    await mailTransporter.sendMail({
+        from: process.env.SMTP_USER,
+        to,
+        subject: '🎨 Bem-vindo ao Mini Paint Manager!',
+        text: [
+            `Olá, ${username}! 👋`,
+            '',
+            'Seja bem-vindo ao Mini Paint Manager — seu espaço para organizar e evoluir suas pinturas.',
+            '',
+            'Aqui você pode:',
+            '',
+            '🧩 Gerenciar suas miniaturas',
+            '🎨 Criar e salvar paletas de cores',
+            '📸 Acompanhar evolução das pinturas',
+            '🧪 Testar combinações e técnicas',
+            '',
+            '---',
+            '',
+            '👉 Comece agora acessando:',
+            dashboardUrl,
+            '',
+            '---',
+            '',
+            '💡 Dica:',
+            'Para adicionar imagens e editar todos os detalhes, acesse o Dashboard.',
+            '',
+            '---',
+            '',
+            'Se precisar de ajuda, estamos por aqui!',
+            '',
+            'Boas pinturas 🎨🔥',
+            '— Mini Paint Manager',
+        ].join('\n'),
+    });
+
+    return { sent: true };
 };
 
 // Controlador de autenticação que lida com o registro e login de usuários. Ele inclui validação de 
@@ -140,6 +191,16 @@ const register = async (req, res) => {
         const user = result.rows[0];
         ensureJwtSecret();
         const token = createToken(user);
+
+        // Envio de email de boas-vindas após registro bem-sucedido, com tratamento de erros para garantir
+        //  que falhas no envio do email não afetem a experiência de registro do usuário. O controlador 
+        // tenta enviar o email e, em caso de falha, registra um aviso no console sem impedir que o usuário 
+        // seja registrado com sucesso.
+        try {
+            await sendWelcomeEmail({ to: user.email, username: user.username });
+        } catch (mailError) {
+            console.warn('Falha ao enviar email de boas-vindas:', mailError?.message || mailError);
+        }
 
         return res.status(201).json({
             message: 'Usuário cadastrado com sucesso',
