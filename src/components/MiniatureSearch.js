@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
-import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import { searchMiniatures } from '../features/miniatures/service';
 
 // Componente de busca com autocomplete
 export default function MiniaturaSearch({ onResults }) {
   const [options, setOptions] = useState([]);
   const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
   useEffect(() => {
     const delay = setTimeout(async () => {
 
-      console.log("Digitando:", inputValue);
-
       if (!inputValue.trim()) {
         setOptions([]);
+        setIsLoading('');
         onResults([]);
         return;
       }
@@ -33,34 +34,25 @@ export default function MiniaturaSearch({ onResults }) {
       // }));
 
       try {
-        const response = await fetch(
-          `${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(inputValue)}`,
-          {
-            headers: {
-              ...getAuthHeaders(),
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Falha na busca de miniaturas (status: ${response.status})`);
-        }
-
-        const data = await response.json();
+        setIsLoading(true);
+        setSearchError('');
+        const data = await searchMiniatures(inputValue);
         const resultList = Array.isArray(data) ? data : [];
 
         // transforma para autocomplete (MUI espera label)
         const opts = resultList.map((m) => ({
-          label: m.nome,
+          label: m.nomeDoPersonagem || m.nome || 'Miniatura sem nome',
           miniatura: m,
         }));
 
         setOptions(opts);
         onResults(resultList); // manda para o MiniaturaList
       } catch (err) {
-        console.error('Erro na busca:', err);
+        setSearchError('Nao foi possivel buscar miniaturas no momento.');
         setOptions([]);
         onResults([]);
+      } finally {
+        setIsLoading(false);
       }
 
     }, 300);
@@ -84,9 +76,14 @@ export default function MiniaturaSearch({ onResults }) {
         }
       }}
 
+      loading={isLoading}
       sx={{ width: 300 }}
       renderInput={(params) => (
-        <TextField {...params} label="Pesquisar miniaturas" />
+        <TextField
+          {...params}
+          label="Pesquisar miniaturas"
+          error={Boolean(searchError)}
+          helperText={searchError} />
       )}
     />
   );
