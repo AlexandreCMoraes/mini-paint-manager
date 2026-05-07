@@ -1,6 +1,6 @@
 import { NOTIFICATION_TIMEOUT } from '../config/api';
 import { buildMiniaturePayload, validateMiniaturePayload } from '../features/miniatures/validation';
-import { createMiniature, deleteMiniature, updateMiniature } from '../features/miniatures/service';
+import { createMiniature, deleteMiniature, updateMiniature } from '../features/miniatures/services';
 // Função para deletar miniatura
 export const handleDeleteMiniatura = async (id, onDelete, setMensagemDelete, setSeveridade) => {
     try {
