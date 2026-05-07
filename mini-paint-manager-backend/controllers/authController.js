@@ -149,6 +149,14 @@ const sendWelcomeEmail = async ({ to, username }) => {
     return { sent: true };
 };
 
+const getDatabaseConfigErrorMessage = (error) => {
+    // Códigos comuns do PostgreSQL para falhas de conexão/configuração.
+    if (error?.code === '28P01') return 'Falha de autenticação no banco (verifique DB_USER/DB_PASSWORD no .env do backend)';
+    if (error?.code === '3D000') return 'Banco não encontrado (verifique DB_NAME no .env do backend)';
+    if (error?.code === 'ECONNREFUSED') return 'Conexão com banco recusada (verifique DB_HOST/DB_PORT e se o PostgreSQL está ativo)';
+    return null;
+};
+
 // Controlador de autenticação que lida com o registro e login de usuários. Ele inclui validação de 
 // entrada, verificação de duplicatas, hashing de senhas e geração de tokens JWT para 
 // autenticação. O controlador também retorna mensagens de erro apropriadas para diferentes 
@@ -275,6 +283,10 @@ const login = async (req, res) => {
         });
     } catch (error) {
         console.error('Erro ao autenticar usuário:', error);
+        const databaseConfigErrorMessage = getDatabaseConfigErrorMessage(error);
+        if (databaseConfigErrorMessage) {
+            return res.status(500).json({ message: databaseConfigErrorMessage });
+        }
         if (error.code === 'MISSING_JWT_SECRET') {
             return res.status(500).json({ message: 'Configuração inválida do servidor (JWT_SECRET ausente)' });
         }

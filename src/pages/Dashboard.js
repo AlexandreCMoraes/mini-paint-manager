@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 // ações do usuário.
 function Dashboard() {
     const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, logout } = useAuth();
 
     // Função para buscar miniaturas do backend e atualizar estado
     const fetchMiniaturas = async () => {
@@ -25,6 +25,13 @@ function Dashboard() {
                         getAuthHeaders()
                 }
             );
+
+            if (res.status === 401) {
+                // Token ausente/expirado/inválido (comum após trocar .env/JWT_SECRET).
+                logout();
+                return;
+            }
+            
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
             setMiniaturas(data); // atualiza estado
