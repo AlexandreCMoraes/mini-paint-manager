@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styles from './MiniatureList.module.css';
 import Notification from './Notification';
-import Button from './Buttons/Button';
 import MiniatureModal from './MiniatureModal';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
@@ -10,6 +9,7 @@ import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '.
 // import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
 import useMiniatureSearch from '../features/miniatures/hooks/useMiniatureSearch';
 import MiniatureSearchSection from './miniatures/MiniatureSearchSection';
+import MiniatureItemsList from './miniatures/MiniatureItemsList';
 
 // Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
 // consistência e facilitar futuras atualizações
@@ -198,11 +198,13 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
     return Number.isNaN(parsed) ? 0 : parsed;
   };
 
-  const miniaturasOrdenadas = [...miniaturas].sort((a, b) => {
+  // useMemo para evitar reordenar a lista toda vez que o componente renderizar, só reordena quando a 
+  // lista de miniaturas mudar.
+  const miniaturasOrdenadas = useMemo(() => [...miniaturas].sort((a, b) => {
     const diff = getActivityTimestamp(b) - getActivityTimestamp(a);
     if (diff !== 0) return diff;
     return Number(b.id || 0) - Number(a.id || 0);
-  });
+  }), [miniaturas]);
   // const miniaturasOrdenadas = [...miniaturas].sort(
   //   (a, b) => new Date(b.data_criacao) - new Date(a.data_criacao)
   // );
@@ -213,12 +215,15 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // O array de miniaturas é fatiado para obter apenas os itens que devem ser exibidos na página atual
   const currentItems = miniaturasOrdenadas.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Se houver busca, também ordena os resultados por atividade mais recente.
-  const sortedSearchResults = [...searchResults].sort((a, b) => {
+  // Ordenação dos resultados de busca utilizando a mesma lógica de atividade recente, para manter 
+  // consistência na exibição tanto da lista completa quanto dos resultados filtrados. Isso garante que, 
+  // mesmo ao buscar, os itens mais recentemente criados ou editados apareçam primeiro, proporcionando 
+  // uma experiência mais intuitiva para o usuário.
+  const sortedSearchResults = useMemo(() => [...searchResults].sort((a, b) => {
     const diff = getActivityTimestamp(b) - getActivityTimestamp(a);
     if (diff !== 0) return diff;
     return Number(b.id || 0) - Number(a.id || 0);
-  });
+  }), [searchResults]);
 
   const listToRender = searchValue.trim().length > 0 ? sortedSearchResults : currentItems;
 
@@ -285,63 +290,16 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       />
 
       {/* Lista de miniaturas */}
-      <ul className={styles.list}>
-        {listToRender.map(m => (
-          <li key={m.id} className="item-wrapper">
-            <div className="item-meta">
-              <strong className={styles.metaLabel}>Nome do personagem</strong>:
-              <span className={searchField === 'nome' ? styles.highlightRow : ''}>
-                {highlightText(m.nome, searchValue, 'nome')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Universo</strong>:
-              <span className={searchField === 'universo' ? styles.highlightRow : ''}>
-                {highlightText(m.universo, searchValue, 'universo')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Escala</strong>:
-              <span className={searchField === 'escala' ? styles.highlightRow : ''}>
-                {highlightText(m.escala, searchValue, 'escala')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Material</strong>:
-              <span className={searchField === 'material' ? styles.highlightRow : ''}>
-                {highlightText(m.material, searchValue, 'material')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Marca da Resina/Filamento</strong>:
-              <span className={searchField === 'marcaResina' ? styles.highlightRow : ''}>
-                {highlightText(m.marca, searchValue, 'marcaResina')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Altura</strong>:
-              <span className={searchField === 'altura' ? styles.highlightRow : ''}>
-                {highlightText(m.altura, searchValue, 'altura')}
-              </span> cm
-              <br />
-
-              <strong className={styles.metaLabel}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
-              {m.data_modificacao && (
-                <>
-                  <br />
-                  <strong className={styles.metaLabel}>Data de Modificação</strong>: {new Date(m.data_modificacao).toLocaleString('pt-BR')}
-                </>
-              )}
-            </div>
-
-            {/* BOTÕES EDITAR E DELETAR */}
-            <div className="item-actions">
-              <Button label={modo === 'dashboard' ? 'Editar' : 'Editar no Dashboard'} onClick={() => handleEditClick(m)} variant='secondary' />
-              <Button label='Deletar' onClick={() => handleDelete(m.id)} variant='danger' />
-            </div>
-          </li>
-        ))}
-      </ul>
+      <MiniatureItemsList
+        styles={styles}
+        listToRender={listToRender}
+        searchField={searchField}
+        searchValue={searchValue}
+        highlightText={highlightText}
+        modo={modo}
+        onEdit={handleEditClick}
+        onDelete={handleDelete}
+      />
 
       {/* Paginação */}
       <Stack
