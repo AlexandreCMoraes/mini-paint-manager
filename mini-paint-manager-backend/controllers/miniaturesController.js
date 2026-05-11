@@ -1,4 +1,5 @@
 const pool = require('../db');
+const { validateMiniaturePayload } = require('../validators/miniatureValidator');
 
 const allowedFields = ['nome', 'universo', 'escala', 'material', 'marca', 'altura'];
 
@@ -64,20 +65,14 @@ const searchMiniatures = async (req, res) => {
 // Em caso de erros durante a inserção, ele captura e registra o erro, retornando uma 
 // mensagem de erro apropriada.
 const createMiniature = async (req, res) => {
-    const { nomeDoPersonagem, universo, escala, material, marca, altura } = req.body;
-    const alturaNumerica = Number(altura);
+    const validation = validateMiniaturePayload(req.body);
 
-    if (!nomeDoPersonagem || !universo || !escala || !material || !marca || Number.isNaN(alturaNumerica)) {
-        return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-    }
-    if (alturaNumerica <= 0) {
-        return res.status(400).json({ message: 'A altura deve ser maior que zero' });
+    if (!validation.ok) {
+        return res.status(validation.status).json({ message: validation.message });
     }
 
-    const escalaPattern = /^\d+:\d+$/;
-    if (!(escalaPattern.test(escala) || escala.trim().toUpperCase() === 'N/A')) {
-        return res.status(400).json({ message: 'A escala deve estar no formato 1:12, 1:24, etc., ou N/A.' });
-    }
+    const { nomeDoPersonagem, universo, escala, material, marca, alturaNumerica } = validation.value;
+
 
     try {
         const result = await pool.query(
@@ -113,22 +108,18 @@ const deleteMiniature = async (req, res) => {
     }
 };
 
+// Controlador de atualização de miniaturas que permite ao usuário modificar os detalhes de uma
+//  miniatura existente.
 const updateMiniature = async (req, res) => {
     const { id } = req.params;
-    const { nomeDoPersonagem, universo, escala, material, marca, altura } = req.body;
-    const alturaNumerica = Number(altura);
+    const validation = validateMiniaturePayload(req.body);
 
-    if (!nomeDoPersonagem || !universo || !escala || !material || !marca || Number.isNaN(alturaNumerica)) {
-        return res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-    }
-    if (alturaNumerica <= 0) {
-        return res.status(400).json({ message: 'A altura deve ser maior que zero' });
+    if (!validation.ok) {
+        return res.status(validation.status).json({ message: validation.message });
     }
 
-    const escalaPattern = /^\d+:\d+$/;
-    if (!(escalaPattern.test(escala) || escala.trim().toUpperCase() === 'N/A')) {
-        return res.status(400).json({ message: 'A escala deve estar no formato 1:12, 1:24, etc., ou N/A.' });
-    }
+
+    const { nomeDoPersonagem, universo, escala, material, marca, alturaNumerica } = validation.value;
 
     try {
         const result = await pool.query(
@@ -154,7 +145,6 @@ const updateMiniature = async (req, res) => {
         return res.status(500).json({ message: 'Erro ao atualizar miniatura' });
     }
 };
-
 module.exports = {
     listMiniatures,
     searchMiniatures,
