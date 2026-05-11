@@ -1,57 +1,23 @@
-import { useEffect, useState, useCallback } from 'react';
 import Header from '../components/Header';
 import MiniatureForm from '../components/MiniatureForm';
 import MiniatureList from '../components/MiniatureList';
 import planoFundo from '../img/plano-de-fundo-v2.jpeg';
 import ResponsiveAppBar from '../components/AppBar';
-import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import useMiniatures from '../features/miniatures/hooks/useMiniatures';
 import { useAuth } from '../context/AuthContext';
 
 function Home() {
-  const [miniaturas, setMiniaturas] = useState([]); // estado da lista de miniaturas
   const { isAuthenticated, logout } = useAuth();
 
-  // Função para buscar miniaturas do backend e atualizar estado
-  const fetchMiniaturas = useCallback(async () => {
-    if (!isAuthenticated) return; // Só busca se estiver autenticado
-
-    try {
-      const res = await fetch(API_ENDPOINTS.MINIATURAS,
-        {
-          headers:
-            getAuthHeaders()
-        }); // inclui token de autenticação
-
-      if (res.status === 401) {
-        // Token ausente/expirado/inválido (comum após trocar .env/JWT_SECRET).
-        logout();
-        return;
-      }
-
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const data = await res.json();
-      setMiniaturas(data); // atualiza estado
-    } catch (error) {
-      console.error('Erro ao buscar miniaturas:', error);
-    }
-  }, [isAuthenticated, logout]);
-
-  useEffect(() => { fetchMiniaturas(); }, [fetchMiniaturas]); // roda quando autenticação muda
-
-  // Função para adicionar nova miniatura na lista 
-  const handleAdd = (newMini) => {
-    setMiniaturas((prevMiniaturas) => [...prevMiniaturas, newMini]); // adiciona nova miniatura
-  };
-
-  // Quando deletar
-  const handleDelete = (id) => {
-    setMiniaturas((prevMiniaturas) => prevMiniaturas.filter((m) => m.id !== id)); // remove miniatura da lista
-  };
-
-  // Quando atualizar
-  const handleUpdate = (updatedMini) => {
-    setMiniaturas((prevMiniaturas) => prevMiniaturas.map((m) => (m.id === updatedMini.id ? updatedMini : m))); // atualiza miniatura na lista
-  };
+  const {
+    miniaturas,
+    addMiniatura,
+    deleteMiniaturaFromList,
+    updateMiniaturaInList,
+  } = useMiniatures({
+    isAuthenticated,
+    onUnauthorized: logout,
+  });
 
   return (
     <div className="page-shell" style={{
@@ -65,8 +31,12 @@ function Home() {
       <Header />
       {/* TODO mexido para testes de estilos */}
       <div className="surface">
-        <MiniatureForm onAdd={handleAdd} />
-        <MiniatureList miniaturas={miniaturas} onDelete={handleDelete} onUpdate={handleUpdate} modo="home" />
+        <MiniatureForm onAdd={addMiniatura} />
+        <MiniatureList
+          miniaturas={miniaturas}
+          onDelete={deleteMiniaturaFromList}
+          onUpdate={updateMiniaturaInList}
+          modo="home" />
       </div>
     </div>
   );

@@ -12,7 +12,9 @@ const request = async (url, options = {}) => {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const error = new Error(`HTTP error! status: ${response.status}`);
+    error.status = response.status;
+    throw error;
   }
 
   if (response.status === 204) {
@@ -24,8 +26,10 @@ const request = async (url, options = {}) => {
 
 export const listMiniatures = () => request(API_ENDPOINTS.MINIATURAS);
 
-export const searchMiniatures = (searchTerm) =>
-  request(`${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchTerm)}`);
+export const searchMiniatures = (searchTerm, field = 'nome') =>
+  request(
+    `${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchTerm)}&field=${encodeURIComponent(field)}`
+  );
 
 export const createMiniature = (payload) =>
   request(API_ENDPOINTS.MINIATURAS, {

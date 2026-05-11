@@ -6,12 +6,10 @@ import Button from './Buttons/Button';
 import MiniatureModal from './MiniatureModal';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturesActions';
-import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+// import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import useMiniatureSearch from '../features/miniatures/hooks/useMiniatureSearch';
+import MiniatureSearchSection from './miniatures/MiniatureSearchSection';
 
 // Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
 // consistência e facilitar futuras atualizações
@@ -32,15 +30,6 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'marcaResina', label: 'Marca da Resina' },
   { value: 'altura', label: 'Altura' }
 ];
-
-const API_FIELD_BY_SEARCH_FIELD = {
-  nome: 'nome',
-  universo: 'universo',
-  escala: 'escala',
-  material: 'material',
-  marcaResina: 'marca',
-  altura: 'altura'
-};
 
 // Função para construir os dados do formulário de edição a partir da miniatura selecionada,
 // garantindo que o formato seja consistente com o esperado pelo formulário, e evitando repetição 
@@ -91,7 +80,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // usuário digita.
   const [searchValue, setSearchValue] = useState('');
   const [searchField, setSearchField] = useState('nome');
-  const [searchResults, setSearchResults] = useState([]);
+  const { searchResults, clearSearchResults } = useMiniatureSearch(searchValue, searchField);
 
   // FUNÇÃO PARA DESTACAR TEXTO BUSCADO
   // Divide o texto e aplica estilo apenas na parte que bate com a busca
@@ -239,44 +228,10 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
     ? (searchResults.length > 0 ? 'Miniaturas encontradas' : 'Nenhuma miniatura encontrada')
     : 'Miniaturas Cadastradas';
 
-  // Busca por nome do personagem
-  useEffect(() => {
-    if (!searchValue.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    // Função para buscar resultados no backend usando o endpoint de busca 
-    // simples, que retorna miniaturas
-    const fetchResults = async () => {
-      try {
-        const apiSearchField = API_FIELD_BY_SEARCH_FIELD[searchField] || 'nome';
-        // Busca no backend usando o endpoint de busca simples, que retorna miniaturas
-        const response = await fetch(
-          `${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchValue)}&field=${encodeURIComponent(apiSearchField)}`,
-          {
-            headers: {
-              ...getAuthHeaders()
-            }
-          });
-        if (!response.ok) {
-          throw new Error(`HTTP status ${response.status}`);
-        }
-        const data = await response.json();
-        setSearchResults(Array.isArray(data) ? data : []); // garantir que seja um array, mesmo que o backend retorne algo inesperado
-      } catch (err) {
-        console.error('Erro na busca:', err);
-        setSearchResults([]);
-      }
-    };
-    // Debounce para evitar muitas requisições ao backend enquanto o usuário digita, só busca após 300ms
-    const delayDebounce = setTimeout(fetchResults, 300);
-    return () => clearTimeout(delayDebounce);
-  }, [searchValue, searchField]);
-
   // Limpar busca
   const clearSearch = () => {
     setSearchValue('');
-    setSearchResults([]);
+    clearSearchResults();
   };
 
   // Lista a renderizar: resultados de busca ou itens da página atual
@@ -317,98 +272,17 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       {/* Título da página */}
       <h2 className={styles.title}>{pageTitle}</h2>
 
-      {/* Busca autocomplete  por outros campos */}
-      <div className={styles.searchSection}>
-        <div className={styles.inputGroup}>
-          <label className={styles.searchLabel}>Buscar Miniaturas</label>
-          <div className={styles.searchRow}>
-
-            {/* Campo de seleção para o campo de busca */}
-            <FormControl
-              size="small"
-              className={styles.searchFieldControl}
-            >
-              <InputLabel id="search-field-label" sx={{
-                color: 'var(--color-primary-button, #00ffcc)',
-                '&.Mui-focused': {
-                  color: 'var(--color-primary-button, #00ffcc)'
-                }
-              }}>Campo</InputLabel>
-              <Select
-                labelId="search-field-label"
-                id="search-field-select"
-
-                value={searchField}
-                label="Campo"
-                onChange={(e) => setSearchField(e.target.value)}
-                MenuProps={{
-                  disableScrollLock: true, // evita problemas de scroll em alguns navegadores
-
-                  PaperProps: {
-                    sx: {
-                      bgcolor: 'rgba(26, 26, 46, 0.98)',
-                      color: 'var(--color-text-light, #ffffff)',
-                      border: '1px solid var(--color-primary-button, #00ffcc)'
-                    }
-                  }
-                }}
-                sx={{
-                  color: 'var(--color-text-light, #ffffff)',
-                  '.MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-primary-button, #00ffcc)'
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-primary-button, #00ffcc)'
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-primary-button, #00ffcc)'
-                  },
-                  '.MuiSvgIcon-root': {
-                    color: 'var(--color-primary-button, #00ffcc)'
-                  }
-                }}
-              >
-                {SEARCH_FIELD_OPTIONS.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className={styles.searchInput}
-              placeholder={`Pesquisar por ${SEARCH_FIELD_OPTIONS.find((option) =>
-                option.value === searchField)?.label?.toLowerCase() || 'nome'}`}
-            />
-            <button
-              onClick={clearSearch}
-              className={styles.clearButton}
-            >
-              X
-            </button>
-          </div>
-
-          {/* Lista de sugestões autocomplete */}
-          {searchResults.length > 0 && (
-            <div className={styles.searchSuggestions}>
-              {searchResults.map((res) => (
-                <div key={res.id} className={styles.suggestionItem}>
-                  <div><strong>Nome:</strong> {res.nome}</div>
-                  <div><strong>Universo:</strong> {res.universo}</div>
-                  <div><strong>Escala:</strong> {res.escala}</div>
-                  <div><strong>Material:</strong> {res.material}</div>
-                  <div><strong>Marca:</strong> {res.marca}</div>
-                  <div><strong>Altura:</strong> {res.altura} cm</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Busca autocomplete por outros campos */}
+      <MiniatureSearchSection
+        styles={styles}
+        searchField={searchField}
+        setSearchField={setSearchField}
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
+        clearSearch={clearSearch}
+        searchResults={searchResults}
+        searchFieldOptions={SEARCH_FIELD_OPTIONS}
+      />
 
       {/* Lista de miniaturas */}
       <ul className={styles.list}>
