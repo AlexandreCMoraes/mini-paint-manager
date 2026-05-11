@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Header from '../components/Header';
 import MiniatureForm from '../components/MiniatureForm';
 import MiniatureList from '../components/MiniatureList';
@@ -12,7 +12,7 @@ function Home() {
   const { isAuthenticated, logout } = useAuth();
 
   // Função para buscar miniaturas do backend e atualizar estado
-  const fetchMiniaturas = async () => {
+  const fetchMiniaturas = useCallback(async () => {
     if (!isAuthenticated) return; // Só busca se estiver autenticado
 
     try {
@@ -27,30 +27,30 @@ function Home() {
         logout();
         return;
       }
-      
+
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setMiniaturas(data); // atualiza estado
     } catch (error) {
       console.error('Erro ao buscar miniaturas:', error);
     }
-  };
+  }, [isAuthenticated, logout]);
 
-  useEffect(() => { fetchMiniaturas(); }, [isAuthenticated]); // roda quando autenticação muda
+  useEffect(() => { fetchMiniaturas(); }, [fetchMiniaturas]); // roda quando autenticação muda
 
   // Função para adicionar nova miniatura na lista 
   const handleAdd = (newMini) => {
-    setMiniaturas([...miniaturas, newMini]); // adiciona nova miniatura
+    setMiniaturas((prevMiniaturas) => [...prevMiniaturas, newMini]); // adiciona nova miniatura
   };
 
   // Quando deletar
   const handleDelete = (id) => {
-    setMiniaturas(miniaturas.filter(m => m.id !== id));
+    setMiniaturas((prevMiniaturas) => prevMiniaturas.filter((m) => m.id !== id)); // remove miniatura da lista
   };
 
   // Quando atualizar
   const handleUpdate = (updatedMini) => {
-    setMiniaturas(miniaturas.map(m => m.id === updatedMini.id ? updatedMini : m));
+    setMiniaturas((prevMiniaturas) => prevMiniaturas.map((m) => (m.id === updatedMini.id ? updatedMini : m))); // atualiza miniatura na lista
   };
 
   return (

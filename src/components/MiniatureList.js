@@ -42,6 +42,18 @@ const API_FIELD_BY_SEARCH_FIELD = {
   altura: 'altura'
 };
 
+// Função para construir os dados do formulário de edição a partir da miniatura selecionada,
+// garantindo que o formato seja consistente com o esperado pelo formulário, e evitando repetição 
+// de código tanto no clique de edição quanto na abertura via URL.
+const buildEditFormData = (miniatura) => ({
+  nomeDoPersonagem: miniatura.nome,
+  universo: miniatura.universo,
+  escala: miniatura.escala,
+  material: miniatura.material,
+  marca: miniatura.marca,
+  altura: miniatura.altura != null ? String(miniatura.altura) : ''
+});
+
 export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = 'home' }) {
   // Estados para modal de edição da miniatura
   const [open, setOpen] = useState(false);
@@ -50,7 +62,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   const [openedFromParam, setOpenedFromParam] = useState(false);
   const [activeTab, setActiveTab] = useState(0); // Estado para a aba ativa no modal
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   // Pega o editId da URL para abrir o modal de edição se o 
   // usuário clicar em editar no dashboard, que redireciona para a home 
   // com o editId na URL. O useEffect que abre o modal de edição verifica 
@@ -106,14 +118,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
 
   // clicar em editar abre modal
   const handleEditClick = (mini) => {
-    const newEditData = {
-      nomeDoPersonagem: mini.nome,
-      universo: mini.universo,
-      escala: mini.escala,
-      material: mini.material,
-      marca: mini.marca,
-      altura: mini.altura != null ? String(mini.altura) : '' // lidar com caso de altura ser null ou undefined
-    };
+    const newEditData = buildEditFormData(mini);
+
     // Se estiver no dashboard, abre o modal de edição simples. Se estiver na 
     // home, redireciona para a home com o editId na URL para abrir o modal de 
     // edição com os dados da miniatura correspondente, permitindo a edição 
@@ -145,7 +151,8 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
         });
       }, 300);
     }
-    // setDeleted(false); // resetar flag
+    setDeleted(false); // reseta o estado de deleted para evitar loops desnecessários no useEffect, 
+    // só queremos que ele reaja uma vez por delete, e não toda vez que a lista de miniaturas mudar.
   }, [deleted, miniaturas, page]);
 
   // Abrir modal de edição se editId estiver presente na URL e 
@@ -157,22 +164,39 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
     if (!mini) return;
 
     setSelectedMiniatura(mini);
-    setEditFormData({
-      nomeDoPersonagem: mini.nome,
-      universo: mini.universo,
-      escala: mini.escala,
-      material: mini.material,
-      marca: mini.marca,
-      altura: mini.altura != null ? String(mini.altura) : ''
-    });
+    setEditFormData(buildEditFormData(mini));
     setActiveTab(0); // Define a aba como "Dados Básicos" ao abrir via URL
     setOpen(true);
     setOpenedFromParam(true);
-  }, [modo, editIdFromUrl, miniaturas, openedFromParam]);
+    // Remove o parâmetro assim que o modal abre para evitar reabertura em refresh
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('editId');
+    setSearchParams(nextParams, { replace: true });
+  }, [modo, editIdFromUrl, miniaturas, openedFromParam, searchParams, setSearchParams]);
 
   // salvar edição
-  const handleSave = (e) => handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen, setSeveridade);
+  const clearEditIdParam = () => {
+    if (!editIdFromUrl) return;
 
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('editId');
+    setSearchParams(nextParams, { replace: true });
+  };
+
+  const closeModal = () => {
+    setOpen(false);
+    setSelectedMiniatura(null);
+    setActiveTab(0);
+    setOpenedFromParam(false);
+    clearEditIdParam();
+  };
+
+  // Handle para salvar as alterações da miniatura editada, passando os dados do formulário, o ID da 
+  // miniatura selecionada, e as funções de callback para atualizar a lista, mostrar mensagens de 
+  // sucesso/erro, fechar o modal e ajustar a severidade da notificação conforme o resultado da operação.
+  const handleSave = (e) =>
+    handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso,
+      setMensagemErro, closeModal, setSeveridade);
   // Handle para mudanças nos campos do modal de edição (mantém validações de MiniaturaForm)
   // Validação especial para escala para colocar apenas números e ":" (para escalas como 1:24)
   // A mesma logica utilizada no cadastro é aplicada aqui
@@ -438,7 +462,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
 
             {/* BOTÕES EDITAR E DELETAR */}
             <div className="item-actions">
-              <Button label='Editar no Dashboard' onClick={() => handleEditClick(m)} variant='secondary' />
+              <Button label={modo === 'dashboard' ? 'Editar' : 'Editar no Dashboard'} onClick={() => handleEditClick(m)} variant='secondary' />
               <Button label='Deletar' onClick={() => handleDelete(m.id)} variant='danger' />
             </div>
           </li>
