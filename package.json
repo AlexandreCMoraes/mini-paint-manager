@@ -28,7 +28,7 @@
     "eject": "react-scripts eject",
     "get-ip": "node get-ip.js",
     "test-api": "node test-api.js",
-    "start-all": "concurrently --colors -n \"BACK,FRONT\" -c \"blue,magenta\" \"npm run dev --prefix mini-paint-manager-backend\" \"npm start -- --clear\""
+    "start-all": "concurrently --kill-others --colors -n \"BACK,FRONT\" -c \"blue,magenta\" \"npm run dev --prefix mini-paint-manager-backend\" \"npm start -- --clear\""
   },
   "eslintConfig": {
     "extends": [
