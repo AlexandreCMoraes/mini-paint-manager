@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styles from './MiniatureList.module.css';
 import Notification from './Notification';
@@ -10,6 +10,7 @@ import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '.
 import useMiniatureSearch from '../features/miniatures/hooks/useMiniatureSearch';
 import MiniatureSearchSection from './miniatures/MiniatureSearchSection';
 import MiniatureItemsList from './miniatures/MiniatureItemsList';
+import useMiniaturePagination from '../features/miniatures/hooks/useMiniaturePagination';
 
 // Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
 // consistência e facilitar futuras atualizações
@@ -65,16 +66,11 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [mensagemErro, setMensagemErro] = useState('');
 
-  // Estados para paginação
-  const [page, setPage] = useState(1);
+  // Estados e lógica para paginação, utilizando o hook personalizado useMiniaturePagination para calcular os 
+  // índices dos itens a serem exibidos e controlar a página atual, total de páginas, e referência para o 
+  // componente de paginação.
   const itemsPerPage = 10;
-  // Referência para o componente de paginação, caso seja necessário manipular diretamente 
-  // (ex: resetar para a página 1 após uma ação)
-  const paginationRef = useRef(null);
-  // Estado para marcar se houve um delete, utilizado para acionar o useEffect que ajusta a 
-  // página atual após deletar itens
-  const [deleted, setDeleted] = useState(false);
-  // Handle para deletar miniatura
+  const { page, setPage, paginationRef, markDeleted, totalPages } = useMiniaturePagination(miniaturas.length, itemsPerPage);
 
   // Estados de busca e resultados da busca para filtrar a lista de miniaturas exibida conforme o 
   // usuário digita.
@@ -102,7 +98,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
 
   const handleDelete = (id) => {
     handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
-    setDeleted(true);// marca que houve um delete
+    markDeleted(); // marca que houve um delete
   };
 
   // clicar em editar abre modal
@@ -122,27 +118,6 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
 
     navigate(`/dashboard?editId=${mini.id}`);
   };
-  // Garantir que a página atual seja válida mesmo após deletar itens (ex: se estiver na página 3 e 
-  // deletar itens que reduzem o total para 2 páginas, volta para a página 2)
-  useEffect(() => {
-    if (!deleted) return; // só continua se for um delete (estava acionando o use effect ao dar f5 antes)
-
-    const totalPages = Math.ceil(miniaturas.length / itemsPerPage);
-    if (page > totalPages) {
-      const newPage = totalPages > 0 ? totalPages : 1;
-      setPage(newPage);
-
-      // Scroll suave para o componente de paginação após ajustar a página
-      setTimeout(() => {
-        paginationRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 300);
-    }
-    setDeleted(false); // reseta o estado de deleted para evitar loops desnecessários no useEffect, 
-    // só queremos que ele reaja uma vez por delete, e não toda vez que a lista de miniaturas mudar.
-  }, [deleted, miniaturas, page]);
 
   // Abrir modal de edição se editId estiver presente na URL e 
   // modo for dashboard, para permitir edição
@@ -309,7 +284,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
         className={styles.pagination}
       >
         <Pagination
-          count={Math.ceil(miniaturas.length / itemsPerPage)}
+          count={totalPages}
           page={page}
           onChange={(event, value) => setPage(value)}
           shape="rounded"
