@@ -1,3 +1,6 @@
+// TESTE DO SERVICE: Usa um dublê (Mock) do banco para garantir que as queries SQL e os
+//  parâmetros (como CAST) sejam montados sem erros de digitação.
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 

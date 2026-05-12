@@ -1,3 +1,6 @@
+// INTERRUPTOR: Responsável apenas por ligar o motor do servidor (app.listen) na porta de rede e 
+// carregar o arquivo .env.
+
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 require('dotenv').config();
 const os = require('os');

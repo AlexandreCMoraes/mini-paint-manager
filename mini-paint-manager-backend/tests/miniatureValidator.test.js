@@ -1,3 +1,6 @@
+// TESTE DO VALIDADOR: Garante que as regras de preenchimento (Goku, Kratos, Batman) 
+// continuem funcionando e barrando dados inválidos.
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { validateMiniaturePayload } = require('../validators/miniatureValidator');

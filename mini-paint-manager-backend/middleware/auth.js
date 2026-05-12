@@ -1,3 +1,6 @@
+// FILTRO DE AUTENTICAÇÃO: Valida o token JWT em requisições protegidas, checa se o 
+// usuário está ativo no banco e injeta os dados em 'req.user'.
+
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
 

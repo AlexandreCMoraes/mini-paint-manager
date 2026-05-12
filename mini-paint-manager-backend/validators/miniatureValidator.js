@@ -1,3 +1,6 @@
+// REGRAS DE ENTRADA: Garante que os dados enviados pelo usuário tenham formatos 
+// válidos (como altura positiva e formatos de escala).
+
 const validateMiniaturePayload = (payload = {}) => {
     // Validação dos campos obrigatórios e do formato da escala. Ele verifica se todos os campos necessários estão presentes e se a altura é um número válido. 
     // Além disso, ele valida o formato da escala, permitindo apenas formatos como "1:12", "1:24" ou "N/A". 

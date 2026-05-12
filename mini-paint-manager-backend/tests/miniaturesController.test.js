@@ -1,3 +1,6 @@
+// TESTE DO CONTROLLER: Simula o Express (req/res) para verificar se a API entrega os 
+// status corretos (201, 400, 404) baseado no retorno do Service.
+
 const test = require('node:test');
 const assert = require('node:assert/strict');
 

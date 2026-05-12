@@ -1,3 +1,6 @@
+// PORTEIRO (HTTP): Recebe as requisições web, chama o validador, delega o trabalho
+//  para o Service e devolve as respostas HTTP (200, 201, 404).
+
 const miniatureValidator = require('../validators/miniatureValidator');
 const miniaturesService = require('../services/miniaturesService');
 const allowedFields = ['nome', 'universo', 'escala', 'material', 'marca', 'altura'];

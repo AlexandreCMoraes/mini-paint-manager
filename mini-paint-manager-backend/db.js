@@ -1,3 +1,6 @@
+// CONECTOR: Cria e gerencia a conexão direta (Pool de conexões) com o banco de 
+// dados PostgreSQL.
+
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 require('dotenv').config();
 const { Pool } = require('pg');

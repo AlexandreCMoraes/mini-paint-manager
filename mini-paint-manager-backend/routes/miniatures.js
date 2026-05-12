@@ -1,3 +1,6 @@
+// MAPA DE ROTAS: Define as URLs disponíveis para miniaturas (GET, POST, PUT, DELETE) e
+//  direciona para o Controller.
+
 const express = require('express');
 // Middleware de autenticação para proteger as rotas de miniaturas
 const authMiddleware = require('../middleware/auth');

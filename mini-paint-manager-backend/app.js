@@ -1,3 +1,6 @@
+// CONFIGURADOR: Centraliza as rotas da API, os middlewares globais (CORS, JSON) e o 
+// Fallback para o React (SPA) não quebrar no F5.
+
 // Configuração do servidor Express para a API do Mini Paint Manager. Quais são as rotas, quais middlewares de 
 // segurança usar, como tratar erros e como servir os arquivos do frontend.
 const express = require('express');

@@ -1,3 +1,6 @@
+// CÉREBRO (REGRA DE NEGÓCIO): Processa as regras do sistema e decide o que fazer 
+// com os dados antes de enviar ou buscar do banco.
+
 const miniaturesRepository = require('../repositories/miniaturesRepository');
 
 const listMiniaturesByUser = async (userId) => miniaturesRepository.findAllByUserId(userId);

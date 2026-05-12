@@ -1,3 +1,6 @@
+// ACESSO AO BANCO (SQL): Executa puramente os comandos SQL na tabela de miniaturas. 
+// Não conhece regras de negócio, apenas lê e grava dados cruas.
+
 const pool = require('../db');
 
 // Busca todas as miniaturas de um usuário, ordenando por data de modificação ou criação 
