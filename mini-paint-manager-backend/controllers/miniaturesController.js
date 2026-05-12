@@ -1,13 +1,5 @@
-const { validateMiniaturePayload } = require('../validators/miniatureValidator');
-
-const {
-    listMiniaturesByUser,
-    searchMiniaturesByField,
-    createMiniatureForUser,
-    deleteMiniatureForUser,
-    updateMiniatureForUser,
-} = require('../services/miniaturesService');
-
+const miniatureValidator = require('../validators/miniatureValidator');
+const miniaturesService = require('../services/miniaturesService');
 const allowedFields = ['nome', 'universo', 'escala', 'material', 'marca', 'altura'];
 
 // O controlador de miniaturas é responsável por lidar com as requisições relacionadas às miniaturas do usuário,
@@ -17,7 +9,7 @@ const allowedFields = ['nome', 'universo', 'escala', 'material', 'marca', 'altur
 //  retornando respostas apropriadas para cada cenário, como sucesso, campos ausentes, miniaturas não encontradas ou erros internos do servidor.
 const listMiniatures = async (req, res) => {
     try {
-        const rows = await listMiniaturesByUser(req.user.id);
+        const rows = await miniaturesService.listMiniaturesByUser(req.user.id); // Chama o serviço para listar as miniaturas do usuário autenticado
         return res.status(200).json(rows);
     } catch (error) {
         console.error(error);
@@ -32,8 +24,9 @@ const searchMiniatures = async (req, res) => {
         if (!search || search.trim() === '') {
             return res.json([]);
         }
-
-        const rows = await searchMiniaturesByField({
+        // Chama o serviço para buscar miniaturas do usuário autenticado com base no termo de busca e 
+        // campo especificado
+        const rows = await miniaturesService.searchMiniaturesByField({
             userId: req.user.id,
             search,
             field: normalizedField,
@@ -47,14 +40,14 @@ const searchMiniatures = async (req, res) => {
 };
 
 const createMiniature = async (req, res) => {
-    const validation = validateMiniaturePayload(req.body);
+    const validation = miniatureValidator.validateMiniaturePayload(req.body); // Valida o payload da requisição usando o validador de miniaturas
 
     if (!validation.ok) {
         return res.status(validation.status).json({ message: validation.message });
     }
 
     try {
-        const created = await createMiniatureForUser({
+        const created = await miniaturesService.createMiniatureForUser({
             userId: req.user.id,
             payload: validation.value,
         });
@@ -70,7 +63,8 @@ const deleteMiniature = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deleted = await deleteMiniatureForUser({ userId: req.user.id, id });
+        // Chama o serviço para deletar a miniatura do usuário autenticado com base no ID fornecido na URL
+        const deleted = await miniaturesService.deleteMiniatureForUser({ userId: req.user.id, id });
 
         if (!deleted) {
             return res.status(404).json({ message: 'Miniatura não encontrada' });
@@ -88,14 +82,14 @@ const deleteMiniature = async (req, res) => {
 //  miniatura existente.
 const updateMiniature = async (req, res) => {
     const { id } = req.params;
-    const validation = validateMiniaturePayload(req.body);
+    const validation = miniatureValidator.validateMiniaturePayload(req.body); // Valida o payload da requisição usando o validador de miniaturas
 
     if (!validation.ok) {
         return res.status(validation.status).json({ message: validation.message });
     }
 
     try {
-        const updated = await updateMiniatureForUser({
+        const updated = await miniaturesService.updateMiniatureForUser({
             userId: req.user.id,
             id,
             payload: validation.value,
