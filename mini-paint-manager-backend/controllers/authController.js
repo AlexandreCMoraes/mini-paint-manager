@@ -1,6 +1,9 @@
+// PORTEIRO (AUTENTICAÇÃO): Atende as requisições de login, registro e recuperação, 
+// devolvendo os status HTTP corretos.
+
 const bcrypt = require('bcryptjs'); // bcryptjs para compatibilidade total com Node.js, sem dependências nativas
 const jwt = require('jsonwebtoken'); // jsonwebtoken para criação e verificação de tokens JWT
-const pool = require('../db'); // Configurações de segurança
+const authService = require('../services/authService');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
@@ -25,6 +28,7 @@ const ensureJwtSecret = () => {
         throw error;
     }
 };
+
 // Função para sanitizar os dados do usuário antes de enviá-los na resposta, removendo informações sensíveis como o hash da senha
 const sanitizeUser = (userRow) => ({
     id: userRow.id,
@@ -94,7 +98,6 @@ const sendReactivationEmail = async ({ to, username }) => {
             ' — Mini Paint Manager'
         ].join('\n'),
     });
-
     return { sent: true };
 };
 
@@ -145,7 +148,6 @@ const sendWelcomeEmail = async ({ to, username }) => {
             '— Mini Paint Manager',
         ].join('\n'),
     });
-
     return { sent: true };
 };
 
@@ -169,34 +171,19 @@ const register = async (req, res) => {
     }
 
     try {
-        const duplicateCheck = await pool.query(
-            'SELECT username, email FROM users WHERE username = $1 OR email = $2',
-            [username, email]
-        );
+        const duplicateStatus = await authService.getDuplicateStatus({ username, email });
 
-        if (duplicateCheck.rowCount > 0) {
-            const hasUsername = duplicateCheck.rows.some((row) => row.username === username);
-            const hasEmail = duplicateCheck.rows.some((row) => row.email === email);
+        if (duplicateStatus.hasUsername) {
+            return res.status(409).json({ message: 'Username já está em uso' });
+        }
 
-            if (hasUsername) {
-                return res.status(409).json({ message: 'Username já está em uso' });
-            }
-
-            if (hasEmail) {
-                return res.status(409).json({ message: 'Email já está em uso' });
-            }
+        if (duplicateStatus.hasEmail) {
+            return res.status(409).json({ message: 'Email já está em uso' });
         }
 
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-        const result = await pool.query(
-            `INSERT INTO users (username, email, password_hash, created_at)
-       VALUES ($1, $2, $3, NOW())
-       RETURNING id, username, email, created_at`,
-            [username, email, passwordHash]
-        );
-
-        const user = result.rows[0];
+        const user = await authService.registerUser({ username, email, passwordHash });
         ensureJwtSecret();
         const token = createToken(user);
 
@@ -206,6 +193,7 @@ const register = async (req, res) => {
         // seja registrado com sucesso.
         try {
             await sendWelcomeEmail({ to: user.email, username: user.username });
+
         } catch (mailError) {
             console.warn('Falha ao enviar email de boas-vindas:', mailError?.message || mailError);
         }
@@ -215,6 +203,7 @@ const register = async (req, res) => {
             user: sanitizeUser(user),
             token,
         });
+
     } catch (error) {
         console.error('Erro ao registrar usuário:', error);
 
@@ -222,12 +211,12 @@ const register = async (req, res) => {
             if (error.constraint && error.constraint.includes('username')) {
                 return res.status(409).json({ message: 'Username já está em uso' });
             }
+
             if (error.constraint && error.constraint.includes('email')) {
                 return res.status(409).json({ message: 'Email já está em uso' });
             }
             return res.status(409).json({ message: 'Usuário já existe' });
         }
-
         return res.status(500).json({ message: 'Erro interno ao registrar usuário' });
     }
 };
@@ -246,16 +235,12 @@ const login = async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            'SELECT id, username, email, password_hash, created_at, ativo, deletado_em FROM users WHERE username = $1 LIMIT 1',
-            [username]
-        );
+        const user = await authService.findLoginUser(username);
 
-        if (result.rowCount === 0) {
+        if (!user) {
             return res.status(401).json({ message: 'Credenciais inválidas' });
         }
 
-        const user = result.rows[0];
         const passwordIsValid = await bcrypt.compare(password, user.password_hash);
 
         if (!passwordIsValid) {
@@ -281,12 +266,15 @@ const login = async (req, res) => {
             token,
             user: sanitizeUser(user),
         });
+
     } catch (error) {
         console.error('Erro ao autenticar usuário:', error);
         const databaseConfigErrorMessage = getDatabaseConfigErrorMessage(error);
+
         if (databaseConfigErrorMessage) {
             return res.status(500).json({ message: databaseConfigErrorMessage });
         }
+
         if (error.code === 'MISSING_JWT_SECRET') {
             return res.status(500).json({ message: 'Configuração inválida do servidor (JWT_SECRET ausente)' });
         }
@@ -303,16 +291,13 @@ const checkEmail = async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            'SELECT id FROM users WHERE email = $1 LIMIT 1',
-            [email]
-        );
-
-        if (result.rowCount === 0) {
+        const user = await authService.findEmailUser(email);
+        if (!user) {
             return res.status(404).json({ message: 'Email not found' });
         }
 
         return res.status(200).json({ message: 'Email found' });
+
     } catch (error) {
         console.error('Erro ao verificar email:', error);
         return res.status(500).json({ message: 'Erro interno ao verificar email' });
@@ -329,30 +314,19 @@ const forgotPassword = async (req, res) => {
 
     try {
         // Verificar se o email existe
-        const userCheck = await pool.query(
-            'SELECT id FROM users WHERE email = $1 LIMIT 1',
-            [email]
-        );
+        const user = await authService.checkEmail.findEmailUser(email);
 
-        if (userCheck.rowCount === 0) {
+        if (!user) {
             return res.status(404).json({ message: 'Email not found' });
         }
 
         // Hash da nova senha
         const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-        // Atualizar a senha do usuário e reativar a conta se ela estava desativada
-        await pool.query(
-            `UPDATE users
-             SET password_hash = $1,
-                 ativo = true,
-                 deletado_em = NULL,
-                 reactivation_token = NULL,
-                 reactivation_token_expires_at = NULL
-             WHERE email = $2`, [passwordHash, email]
-        );
+        await authService.updatePasswordAndReactivate({ email, passwordHash }); // Atualiza a senha e reativa a conta
 
         return res.status(200).json({ message: 'Password updated successfully. Account reactivated.' });
+
     } catch (error) {
         console.error('Erro ao resetar senha:', error);
         return res.status(500).json({ message: 'Erro interno ao resetar senha' });
@@ -371,36 +345,30 @@ const requestReactivation = async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            'SELECT id, username, email FROM users WHERE email = $1 LIMIT 1',
-            [email]
-        );
+        const user = await authService.findReactivationUser(email);
 
-        if (result.rowCount === 0) {
+        if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
-        const user = result.rows[0];
         const token = crypto.randomBytes(32).toString('hex');
         const expiresAt = new Date(Date.now() + REACTIVATION_TOKEN_EXPIRY_MS);
 
         try {
-            await pool.query(
-                `UPDATE users
-                 SET reactivation_token = $1,
-                     reactivation_token_expires_at = $2
-                 WHERE id = $3`,
-                [token, expiresAt, user.id]
-            );
+            await authService.setReactivationToken({ userId: user.id, token, expiresAt });
+
         } catch (tokenError) {
             console.warn('Não foi possível salvar token de reativação (verifique migração 004):', tokenError.message);
         }
 
         let mailResult = { sent: false, reason: 'unknown_error' };
+
         try {
             mailResult = await sendReactivationEmail({ to: user.email, username: user.username });
+
         } catch (mailError) {
             console.error('Falha ao enviar email de reativação:', mailError);
+
             if (mailError?.code === 'EAUTH' || mailError?.responseCode === 535) {
                 mailResult = { sent: false, reason: 'invalid_smtp_credentials' };
             } else {
@@ -430,7 +398,6 @@ const requestReactivation = async (req, res) => {
         return res.status(500).json({ message: 'Erro interno ao solicitar reativação de conta' });
     }
 };
-
 
 module.exports = {
     register,

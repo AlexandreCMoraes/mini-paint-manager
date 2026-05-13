@@ -1,3 +1,8 @@
+// TESTE DO SERVIÇO DE USUÁRIOS: Garante que os métodos do serviço de usuários 
+// estejam delegando corretamente as chamadas para o repositório de usuários,
+//  verificando se os argumentos passados para o repositório estão corretos e se os 
+// resultados retornados pelo serviço são os esperados com base nas respostas do repositório.
+
 const test = require('node:test'); // Módulo de teste nativo do Node.js para criar e executar testes unitários.
 const assert = require('node:assert/strict'); // Módulo de asserção do Node.js para validar condições em 
 // testes, garantindo que os resultados sejam os esperados.
