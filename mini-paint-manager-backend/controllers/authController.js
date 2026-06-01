@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs'); // bcryptjs para compatibilidade total com N
 const jwt = require('jsonwebtoken'); // jsonwebtoken para criação e verificação de tokens JWT
 const authService = require('../services/authService');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const emailService = require('../services/emailService');
 
 const SALT_ROUNDS = 10; // Número de rounds para hashing de senha, balanceando segurança e desempenho
 const REACTIVATION_TOKEN_EXPIRY_MS = 60 * 60 * 1000;
@@ -36,120 +36,6 @@ const sanitizeUser = (userRow) => ({
     email: userRow.email,
     created_at: userRow.created_at,
 });
-
-// Função para construir o transportador de email usando as configurações definidas nas variáveis de
-//  ambiente. Ela suporta tanto a configuração de serviço SMTP pré-definida (como Gmail) quanto a 
-// configuração manual de host, porta e segurança. O transportador é usado para enviar emails de
-//  reativação de conta e reset de senha.
-const buildMailTransporter = () => {
-    const smtpService = process.env.SMTP_SERVICE;
-    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const smtpPort = Number(process.env.SMTP_PORT || 587);
-    const smtpSecure = process.env.SMTP_SECURE === 'true' || smtpPort === 465;
-    const smtpUser = (process.env.SMTP_USER || '').trim();
-    const smtpPass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
-
-    return nodemailer.createTransport({
-        ...(smtpService ? { service: smtpService } : {}),
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpSecure,
-        auth: {
-            user: smtpUser,
-            pass: smtpPass,
-        },
-    });
-};
-
-// Função para enviar email de reativação de conta. Ela verifica se as configurações SMTP estão presentes,
-//  constrói o transportador de email, e envia um email para o usuário com instruções para reativar a 
-// conta. A função retorna um objeto indicando se o email foi enviado com sucesso ou se houve um erro, 
-// incluindo o motivo do erro para facilitar o diagnóstico e feedback ao usuário.
-const sendReactivationEmail = async ({ to, username }) => {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        return { sent: false, reason: 'missing_smtp_config' };
-    }
-
-    const mailTransporter = buildMailTransporter();
-    const loginUrl = process.env.REACTIVATION_LOGIN_URL || 'http://localhost:3000/login?forceLogin=1';
-
-    await mailTransporter.sendMail({
-        from: process.env.SMTP_USER,
-        to,
-        subject: 'Solicitação de reativação de conta',
-        text: [
-            'Assunto: 👋 Sentimos sua falta no Mini Paint Manager',
-            '',
-            `Olá, ${username}!`,
-            '',
-            'Notamos que sua conta foi desativada — mas suas miniaturas, cores e histórico continuam salvos com a gente.',
-            'Para reativar sua conta, clique no link abaixo:',
-            loginUrl,
-            '',
-            '🔐 Por segurança, você precisará redefinir sua senha usando a opção "Forgot Password" após acessar o sistema.',
-            '💡 O que você vai recuperar ao voltar:',
-            '• Suas miniaturas cadastradas  ',
-            '• Suas paletas de cores personalizadas  ',
-            '• Seu histórico de uso e preferências  ',
-            '',
-            'Se você não solicitou essa reativação, pode ignorar este email — sua conta permanecerá desativada.',
-            'Esperamos te ver de volta em breve 🎨',
-            '',
-            ' — Mini Paint Manager'
-        ].join('\n'),
-    });
-    return { sent: true };
-};
-
-// Função para enviar email de boas-vindas após o registro de um novo usuário. Ela verifica se as
-// configurações SMTP estão presentes, constrói o transportador de email, e envia um email para o
-//  novo usuário com uma mensagem de boas-vindas e instruções para começar a usar o Mini Paint Manager.
-//  A função retorna um objeto indicando se o email foi enviado com sucesso ou se houve um erro, incluindo
-//  o motivo do erro para facilitar o diagnóstico e feedback ao usuário.
-const sendWelcomeEmail = async ({ to, username }) => {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        return { sent: false, reason: 'missing_smtp_config' };
-    }
-
-    const mailTransporter = buildMailTransporter();
-    const dashboardUrl = process.env.WELCOME_DASHBOARD_URL || 'http://localhost:3000/dashboard';
-
-    await mailTransporter.sendMail({
-        from: process.env.SMTP_USER,
-        to,
-        subject: '🎨 Bem-vindo ao Mini Paint Manager!',
-        text: [
-            `Olá, ${username}! 👋`,
-            '',
-            'Seja bem-vindo ao Mini Paint Manager — seu espaço para organizar e evoluir suas pinturas.',
-            '',
-            'Aqui você pode:',
-            '',
-            '🧩 Gerenciar suas miniaturas',
-            '🎨 Criar e salvar paletas de cores',
-            '📸 Acompanhar evolução das pinturas',
-            '🧪 Testar combinações e técnicas',
-            '',
-            '---',
-            '',
-            '👉 Comece agora acessando:',
-            dashboardUrl,
-            '',
-            '---',
-            '',
-            '💡 Dica:',
-            'Para adicionar imagens e editar todos os detalhes, acesse o Dashboard.',
-            '',
-            '---',
-            '',
-            'Se precisar de ajuda, estamos por aqui!',
-            '',
-            'Boas pinturas 🎨🔥',
-            '— Mini Paint Manager',
-        ].join('\n'),
-    });
-    return { sent: true };
-};
 
 const getDatabaseConfigErrorMessage = (error) => {
     // Códigos comuns do PostgreSQL para falhas de conexão/configuração.
@@ -192,7 +78,7 @@ const register = async (req, res) => {
         // tenta enviar o email e, em caso de falha, registra um aviso no console sem impedir que o usuário 
         // seja registrado com sucesso.
         try {
-            await sendWelcomeEmail({ to: user.email, username: user.username });
+            await emailService.sendWelcomeEmail({ to: user.email, username: user.username });
 
         } catch (mailError) {
             console.warn('Falha ao enviar email de boas-vindas:', mailError?.message || mailError);
@@ -364,7 +250,7 @@ const requestReactivation = async (req, res) => {
         let mailResult = { sent: false, reason: 'unknown_error' };
 
         try {
-            mailResult = await sendReactivationEmail({ to: user.email, username: user.username });
+            mailResult = await emailService.sendReactivationEmail({ to: user.email, username: user.username });
 
         } catch (mailError) {
             console.error('Falha ao enviar email de reativação:', mailError);
