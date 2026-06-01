@@ -1,18 +1,10 @@
-import { API_ENDPOINTS, NOTIFICATION_TIMEOUT, getAuthHeaders } from '../config/api';
-
+import { NOTIFICATION_TIMEOUT } from '../config/api';
+import { buildMiniaturePayload, validateMiniaturePayload } from '../features/miniatures/validation';
+import { createMiniature, deleteMiniature, updateMiniature } from '../features/miniatures/services';
 // Função para deletar miniatura
 export const handleDeleteMiniatura = async (id, onDelete, setMensagemDelete, setSeveridade) => {
     try {
-        const res = await fetch(API_ENDPOINTS.MINIATURA_DELETE(id), {
-            method: 'DELETE',
-            headers: {
-                ...getAuthHeaders()
-            }
-        });
-
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
+        await deleteMiniature(id);
 
         if (onDelete) {
             onDelete(id);
@@ -27,11 +19,6 @@ export const handleDeleteMiniatura = async (id, onDelete, setMensagemDelete, set
         setSeveridade('error');
         setTimeout(() => setMensagemDelete(''), NOTIFICATION_TIMEOUT);
     }
-};
-
-// placeholder para editar, a lógica de modal fica no componente
-export const handleEditMiniatura = (miniatura) => {
-    console.log('Editar miniatura:', miniatura);
 };
 
 export const handleInputChange = (e, formData, setFormData) => {
@@ -60,75 +47,24 @@ export const handleInputChange = (e, formData, setFormData) => {
         [name]: value
     });
 };
-// Função para salvar nova miniatura, recebe os dados do formulário e a função de add do componente pai 
-// para atualizar a lista, além de funções para mostrar mensagens de sucesso/erro
+// Função para salvar nova miniatura, recebe os dados do formulário e a função de add do 
+// componente pai para atualizar a lista com a nova miniatura criada, além de funções 
+// para mostrar mensagens de sucesso ou erro e para limpar os campos do formulário
+//  após o sucesso na criação (setFormData com estado inicial)
 export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSucesso, setMensagemErro, setFormData, INITIAL_FORM_STATE) => {
     e.preventDefault();
 
-    // Validação de campos: altura deve ser um número maior que zero, e 
-    // todos os campos obrigatórios devem estar preenchidos
-    const alturaNumerica = Number(formData.altura);
-    const camposObrigatoriosPreenchidos = [
-        formData.nomeDoPersonagem,
-        formData.universo,
-        formData.escala,
-        formData.material,
-        formData.marca
-    ].every((campo) => typeof campo === 'string' && campo.trim() !== '');
-
-    // Validação antes de tudo para garantir que todos os campos estão preenchidos
-    // if (!formData.nomeDoPersonagem || !formData.universo || !formData.escala ||
-    //     !formData.material || !formData.altura || !formData.marca) {
-    if (!camposObrigatoriosPreenchidos || Number.isNaN(alturaNumerica)) {
-        setMensagemErro("Por favor, preencha todos os campos antes de adicionar a miniatura!");
-        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
-        return;
-    }
-    if (alturaNumerica <= 0) {
-        setMensagemErro('A altura deve ser um número maior que zero.');
+    const validation = validateMiniaturePayload(formData, 'create');
+    if (!validation.ok) {
+        setMensagemErro(validation.message);
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
 
-
-    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24) ou N/A
-    const escalaPattern = /^\d+:\d+$/;
-    if (!(escalaPattern.test(formData.escala) || formData.escala.trim().toUpperCase() === 'N/A')) {
-        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc., ou N/A.');
-        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
-        return;
-    }
-
-    //  Construção do objeto a ser enviado para o backend (backend espera nomeDoPersonagem, universo, 
-    // escala, material, marca, altura)
-    const newMini = {
-        nomeDoPersonagem: formData.nomeDoPersonagem,
-        universo: formData.universo,
-        escala: formData.escala,
-        material: formData.material,
-        marca: formData.marca,
-        // altura: parseFloat(formData.altura)
-        altura: alturaNumerica
-    };
+    const newMini = buildMiniaturePayload(formData, validation.alturaNumerica);
 
     try {
-        const res = await fetch(API_ENDPOINTS.MINIATURAS, {
-            method: 'POST',
-            // inclui token de autenticação no header para rotas protegidas do backend que 
-            // exigem autenticação para criar novas miniaturas (rota POST /miniaturas é
-            //  protegida) - o token é obtido da função getAuthHeaders que lê o token do 
-            // localStorage e retorna o header Authorization com o token, e é espalhado 
-            // junto com o header Content-Type para garantir que ambos sejam enviados na 
-            // requisição
-            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-            body: JSON.stringify(newMini)
-        });
-
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        const data = await res.json();
+        const data = await createMiniature(newMini);
 
         // Atualiza lista no componente pai 
         if (onAdd) {
@@ -154,58 +90,17 @@ export const handleSubmitMiniatura = async (e, formData, onAdd, setMensagemSuces
 export const handleSaveMiniatura = async (e, formData, id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen) => {
     e.preventDefault();
 
-    const alturaNumerica = Number(formData.altura);
-    const camposObrigatoriosPreenchidos = [
-        formData.nomeDoPersonagem,
-        formData.universo,
-        formData.escala,
-        formData.material,
-        formData.marca
-    ].every((campo) => typeof campo === 'string' && campo.trim() !== '');
-
-    // Validação antes de tudo para garantir que todos os campos estão preenchidos
-    if (!camposObrigatoriosPreenchidos || Number.isNaN(alturaNumerica)) {
-        setMensagemErro("Por favor, preencha todos os campos antes de salvar a miniatura!");
-        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
-        return;
-    }
-    if (alturaNumerica <= 0) {
-        setMensagemErro('A altura deve ser um número maior que zero.');
+    const validation = validateMiniaturePayload(formData, 'update');
+    if (!validation.ok) {
+        setMensagemErro(validation.message);
         setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
         return;
     }
 
-    //  Validação da escala no submit: deve ser no formato d+:d+ (ex: 1:12, 1:24) ou N/A
-    const escalaPattern = /^\d+:\d+$/;
-    if (!(escalaPattern.test(formData.escala) || formData.escala.trim().toUpperCase() === 'N/A')) {
-        setMensagemErro('A escala deve estar no formato 1:12, 1:24, etc., ou N/A.');
-        setTimeout(() => setMensagemErro(''), NOTIFICATION_TIMEOUT);
-        return;
-    }
-
-    //  Construção do objeto a ser enviado para o backend
-    const updatedMini = {
-        nomeDoPersonagem: formData.nomeDoPersonagem,
-        universo: formData.universo,
-        escala: formData.escala,
-        material: formData.material,
-        marca: formData.marca,
-        // altura: parseFloat(formData.altura)
-        altura: alturaNumerica
-    };
+    const updateMini = buildMiniaturePayload(formData, validation.alturaNumerica);
 
     try {
-        const res = await fetch(API_ENDPOINTS.MINIATURA_UPDATE(id), {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-            body: JSON.stringify(updatedMini)
-        });
-
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        const data = await res.json();
+        const data = await updateMiniature(id, updateMini);
 
         // Atualiza lista no componente pai e renderiza nova miniatura editada
         if (onUpdate) {

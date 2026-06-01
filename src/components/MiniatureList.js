@@ -1,17 +1,17 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styles from './MiniatureList.module.css';
 import Notification from './Notification';
-import Button from './Buttons/Button';
 import MiniatureModal from './MiniatureModal';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import { handleDeleteMiniatura, handleSaveMiniatura, handleInputChange } from '../actions/miniaturesActions';
-import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+// import { API_ENDPOINTS, getAuthHeaders } from '../config/api';
+import useMiniatureSearch from '../features/miniatures/hooks/useMiniatureSearch';
+import MiniatureSearchSection from './miniatures/MiniatureSearchSection';
+import MiniatureItemsList from './miniatures/MiniatureItemsList';
+import useMiniaturePagination from '../features/miniatures/hooks/useMiniaturePagination';
+import useMiniatureEditModal from '../features/miniatures/hooks/useMiniatureEditModal';
 
 // Opções para os campos de edição, importados do mesmo arquivo utilizado no cadastro para manter 
 // consistência e facilitar futuras atualizações
@@ -33,30 +33,26 @@ const SEARCH_FIELD_OPTIONS = [
   { value: 'altura', label: 'Altura' }
 ];
 
-const API_FIELD_BY_SEARCH_FIELD = {
-  nome: 'nome',
-  universo: 'universo',
-  escala: 'escala',
-  material: 'material',
-  marcaResina: 'marca',
-  altura: 'altura'
-};
-
 export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = 'home' }) {
-  // Estados para modal de edição da miniatura
-  const [open, setOpen] = useState(false);
-  const [selectedMiniatura, setSelectedMiniatura] = useState(null);
-  const [editFormData, setEditFormData] = useState({});
-  const [openedFromParam, setOpenedFromParam] = useState(false);
-  const [activeTab, setActiveTab] = useState(0); // Estado para a aba ativa no modal
+
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  // Pega o editId da URL para abrir o modal de edição se o 
-  // usuário clicar em editar no dashboard, que redireciona para a home 
-  // com o editId na URL. O useEffect que abre o modal de edição verifica 
-  // esse parâmetro e abre o modal com os dados da miniatura correspondente, 
-  // permitindo a edição mesmo sem estar no dashboard.
-  const editIdFromUrl = searchParams.get('editId');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const {
+    open,
+    setOpen,
+    selectedMiniatura,
+    editFormData,
+    setEditFormData,
+    activeTab,
+    setActiveTab,
+    closeModal,
+    openFromMiniature,
+  } = useMiniatureEditModal({
+    modo,
+    miniaturas,
+    searchParams,
+    setSearchParams,
+  });
 
   // Estados para notificações
   const [mensagemDelete, setMensagemDelete] = useState('');
@@ -64,22 +60,17 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   const [mensagemSucesso, setMensagemSucesso] = useState('');
   const [mensagemErro, setMensagemErro] = useState('');
 
-  // Estados para paginação
-  const [page, setPage] = useState(1);
+  // Estados e lógica para paginação, utilizando o hook personalizado useMiniaturePagination para calcular os 
+  // índices dos itens a serem exibidos e controlar a página atual, total de páginas, e referência para o 
+  // componente de paginação.
   const itemsPerPage = 10;
-  // Referência para o componente de paginação, caso seja necessário manipular diretamente 
-  // (ex: resetar para a página 1 após uma ação)
-  const paginationRef = useRef(null);
-  // Estado para marcar se houve um delete, utilizado para acionar o useEffect que ajusta a 
-  // página atual após deletar itens
-  const [deleted, setDeleted] = useState(false);
-  // Handle para deletar miniatura
+  const { page, setPage, paginationRef, markDeleted, totalPages } = useMiniaturePagination(miniaturas.length, itemsPerPage);
 
   // Estados de busca e resultados da busca para filtrar a lista de miniaturas exibida conforme o 
   // usuário digita.
   const [searchValue, setSearchValue] = useState('');
   const [searchField, setSearchField] = useState('nome');
-  const [searchResults, setSearchResults] = useState([]);
+  const { searchResults, clearSearchResults } = useMiniatureSearch(searchValue, searchField);
 
   // FUNÇÃO PARA DESTACAR TEXTO BUSCADO
   // Divide o texto e aplica estilo apenas na parte que bate com a busca
@@ -101,78 +92,30 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
 
   const handleDelete = (id) => {
     handleDeleteMiniatura(id, onDelete, setMensagemDelete, setSeveridade);
-    setDeleted(true);// marca que houve um delete
+    markDeleted(); // marca que houve um delete
   };
 
   // clicar em editar abre modal
   const handleEditClick = (mini) => {
-    const newEditData = {
-      nomeDoPersonagem: mini.nome,
-      universo: mini.universo,
-      escala: mini.escala,
-      material: mini.material,
-      marca: mini.marca,
-      altura: mini.altura != null ? String(mini.altura) : '' // lidar com caso de altura ser null ou undefined
-    };
+
     // Se estiver no dashboard, abre o modal de edição simples. Se estiver na 
     // home, redireciona para a home com o editId na URL para abrir o modal de 
     // edição com os dados da miniatura correspondente, permitindo a edição 
     // mesmo sem estar no dashboard.
     if (modo === 'dashboard') {
-      setSelectedMiniatura(mini);
-      setEditFormData(newEditData);
-      setOpen(true);
+      openFromMiniature(mini);// Abre o modal de edição simples
       return;
     }
 
     navigate(`/dashboard?editId=${mini.id}`);
   };
-  // Garantir que a página atual seja válida mesmo após deletar itens (ex: se estiver na página 3 e 
-  // deletar itens que reduzem o total para 2 páginas, volta para a página 2)
-  useEffect(() => {
-    if (!deleted) return; // só continua se for um delete (estava acionando o use effect ao dar f5 antes)
 
-    const totalPages = Math.ceil(miniaturas.length / itemsPerPage);
-    if (page > totalPages) {
-      const newPage = totalPages > 0 ? totalPages : 1;
-      setPage(newPage);
-
-      // Scroll suave para o componente de paginação após ajustar a página
-      setTimeout(() => {
-        paginationRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }, 300);
-    }
-    // setDeleted(false); // resetar flag
-  }, [deleted, miniaturas, page]);
-
-  // Abrir modal de edição se editId estiver presente na URL e 
-  // modo for dashboard, para permitir edição
-  useEffect(() => {
-    if (modo !== 'dashboard' || !editIdFromUrl || openedFromParam) return;
-
-    const mini = miniaturas.find((m) => String(m.id) === String(editIdFromUrl));
-    if (!mini) return;
-
-    setSelectedMiniatura(mini);
-    setEditFormData({
-      nomeDoPersonagem: mini.nome,
-      universo: mini.universo,
-      escala: mini.escala,
-      material: mini.material,
-      marca: mini.marca,
-      altura: mini.altura != null ? String(mini.altura) : ''
-    });
-    setActiveTab(0); // Define a aba como "Dados Básicos" ao abrir via URL
-    setOpen(true);
-    setOpenedFromParam(true);
-  }, [modo, editIdFromUrl, miniaturas, openedFromParam]);
-
-  // salvar edição
-  const handleSave = (e) => handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso, setMensagemErro, setOpen, setSeveridade);
-
+  // Handle para salvar as alterações da miniatura editada, passando os dados do formulário, o ID da 
+  // miniatura selecionada, e as funções de callback para atualizar a lista, mostrar mensagens de 
+  // sucesso/erro, fechar o modal e ajustar a severidade da notificação conforme o resultado da operação.
+  const handleSave = (e) =>
+    handleSaveMiniatura(e, editFormData, selectedMiniatura.id, onUpdate, setMensagemSucesso,
+      setMensagemErro, closeModal, setSeveridade);
   // Handle para mudanças nos campos do modal de edição (mantém validações de MiniaturaForm)
   // Validação especial para escala para colocar apenas números e ":" (para escalas como 1:24)
   // A mesma logica utilizada no cadastro é aplicada aqui
@@ -185,11 +128,13 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
     return Number.isNaN(parsed) ? 0 : parsed;
   };
 
-  const miniaturasOrdenadas = [...miniaturas].sort((a, b) => {
+  // useMemo para evitar reordenar a lista toda vez que o componente renderizar, só reordena quando a 
+  // lista de miniaturas mudar.
+  const miniaturasOrdenadas = useMemo(() => [...miniaturas].sort((a, b) => {
     const diff = getActivityTimestamp(b) - getActivityTimestamp(a);
     if (diff !== 0) return diff;
     return Number(b.id || 0) - Number(a.id || 0);
-  });
+  }), [miniaturas]);
   // const miniaturasOrdenadas = [...miniaturas].sort(
   //   (a, b) => new Date(b.data_criacao) - new Date(a.data_criacao)
   // );
@@ -200,12 +145,15 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
   // O array de miniaturas é fatiado para obter apenas os itens que devem ser exibidos na página atual
   const currentItems = miniaturasOrdenadas.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Se houver busca, também ordena os resultados por atividade mais recente.
-  const sortedSearchResults = [...searchResults].sort((a, b) => {
+  // Ordenação dos resultados de busca utilizando a mesma lógica de atividade recente, para manter 
+  // consistência na exibição tanto da lista completa quanto dos resultados filtrados. Isso garante que, 
+  // mesmo ao buscar, os itens mais recentemente criados ou editados apareçam primeiro, proporcionando 
+  // uma experiência mais intuitiva para o usuário.
+  const sortedSearchResults = useMemo(() => [...searchResults].sort((a, b) => {
     const diff = getActivityTimestamp(b) - getActivityTimestamp(a);
     if (diff !== 0) return diff;
     return Number(b.id || 0) - Number(a.id || 0);
-  });
+  }), [searchResults]);
 
   const listToRender = searchValue.trim().length > 0 ? sortedSearchResults : currentItems;
 
@@ -215,44 +163,10 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
     ? (searchResults.length > 0 ? 'Miniaturas encontradas' : 'Nenhuma miniatura encontrada')
     : 'Miniaturas Cadastradas';
 
-  // Busca por nome do personagem
-  useEffect(() => {
-    if (!searchValue.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    // Função para buscar resultados no backend usando o endpoint de busca 
-    // simples, que retorna miniaturas
-    const fetchResults = async () => {
-      try {
-        const apiSearchField = API_FIELD_BY_SEARCH_FIELD[searchField] || 'nome';
-        // Busca no backend usando o endpoint de busca simples, que retorna miniaturas
-        const response = await fetch(
-          `${API_ENDPOINTS.MINIATURAS}/search?search=${encodeURIComponent(searchValue)}&field=${encodeURIComponent(apiSearchField)}`,
-          {
-            headers: {
-              ...getAuthHeaders()
-            }
-          });
-        if (!response.ok) {
-          throw new Error(`HTTP status ${response.status}`);
-        }
-        const data = await response.json();
-        setSearchResults(Array.isArray(data) ? data : []); // garantir que seja um array, mesmo que o backend retorne algo inesperado
-      } catch (err) {
-        console.error('Erro na busca:', err);
-        setSearchResults([]);
-      }
-    };
-    // Debounce para evitar muitas requisições ao backend enquanto o usuário digita, só busca após 300ms
-    const delayDebounce = setTimeout(fetchResults, 300);
-    return () => clearTimeout(delayDebounce);
-  }, [searchValue, searchField]);
-
   // Limpar busca
   const clearSearch = () => {
     setSearchValue('');
-    setSearchResults([]);
+    clearSearchResults();
   };
 
   // Lista a renderizar: resultados de busca ou itens da página atual
@@ -293,157 +207,29 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
       {/* Título da página */}
       <h2 className={styles.title}>{pageTitle}</h2>
 
-      {/* Busca autocomplete  por outros campos */}
-      <div className={styles.searchSection}>
-        <div className={styles.inputGroup}>
-          <label className={styles.searchLabel}>Buscar Miniaturas</label>
-          <div className={styles.searchRow}>
-
-            {/* Campo de seleção para o campo de busca */}
-            <FormControl
-              size="small"
-              className={styles.searchFieldControl}
-            >
-              <InputLabel id="search-field-label" sx={{
-                color: 'var(--color-primary-button, #00ffcc)',
-                '&.Mui-focused': {
-                  color: 'var(--color-primary-button, #00ffcc)'
-                }
-              }}>Campo</InputLabel>
-              <Select
-                labelId="search-field-label"
-                id="search-field-select"
-
-                value={searchField}
-                label="Campo"
-                onChange={(e) => setSearchField(e.target.value)}
-                MenuProps={{
-                  disableScrollLock: true, // evita problemas de scroll em alguns navegadores
-
-                  PaperProps: {
-                    sx: {
-                      bgcolor: 'rgba(26, 26, 46, 0.98)',
-                      color: 'var(--color-text-light, #ffffff)',
-                      border: '1px solid var(--color-primary-button, #00ffcc)'
-                    }
-                  }
-                }}
-                sx={{
-                  color: 'var(--color-text-light, #ffffff)',
-                  '.MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-primary-button, #00ffcc)'
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-primary-button, #00ffcc)'
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: 'var(--color-primary-button, #00ffcc)'
-                  },
-                  '.MuiSvgIcon-root': {
-                    color: 'var(--color-primary-button, #00ffcc)'
-                  }
-                }}
-              >
-                {SEARCH_FIELD_OPTIONS.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className={styles.searchInput}
-              placeholder={`Pesquisar por ${SEARCH_FIELD_OPTIONS.find((option) =>
-                option.value === searchField)?.label?.toLowerCase() || 'nome'}`}
-            />
-            <button
-              onClick={clearSearch}
-              className={styles.clearButton}
-            >
-              X
-            </button>
-          </div>
-
-          {/* Lista de sugestões autocomplete */}
-          {searchResults.length > 0 && (
-            <div className={styles.searchSuggestions}>
-              {searchResults.map((res) => (
-                <div key={res.id} className={styles.suggestionItem}>
-                  <div><strong>Nome:</strong> {res.nome}</div>
-                  <div><strong>Universo:</strong> {res.universo}</div>
-                  <div><strong>Escala:</strong> {res.escala}</div>
-                  <div><strong>Material:</strong> {res.material}</div>
-                  <div><strong>Marca:</strong> {res.marca}</div>
-                  <div><strong>Altura:</strong> {res.altura} cm</div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Busca autocomplete por outros campos */}
+      <MiniatureSearchSection
+        styles={styles}
+        searchField={searchField}
+        setSearchField={setSearchField}
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
+        clearSearch={clearSearch}
+        searchResults={searchResults}
+        searchFieldOptions={SEARCH_FIELD_OPTIONS}
+      />
 
       {/* Lista de miniaturas */}
-      <ul className={styles.list}>
-        {listToRender.map(m => (
-          <li key={m.id} className="item-wrapper">
-            <div className="item-meta">
-              <strong className={styles.metaLabel}>Nome do personagem</strong>:
-              <span className={searchField === 'nome' ? styles.highlightRow : ''}>
-                {highlightText(m.nome, searchValue, 'nome')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Universo</strong>:
-              <span className={searchField === 'universo' ? styles.highlightRow : ''}>
-                {highlightText(m.universo, searchValue, 'universo')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Escala</strong>:
-              <span className={searchField === 'escala' ? styles.highlightRow : ''}>
-                {highlightText(m.escala, searchValue, 'escala')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Material</strong>:
-              <span className={searchField === 'material' ? styles.highlightRow : ''}>
-                {highlightText(m.material, searchValue, 'material')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Marca da Resina/Filamento</strong>:
-              <span className={searchField === 'marcaResina' ? styles.highlightRow : ''}>
-                {highlightText(m.marca, searchValue, 'marcaResina')}
-              </span>
-              <br />
-
-              <strong className={styles.metaLabel}>Altura</strong>:
-              <span className={searchField === 'altura' ? styles.highlightRow : ''}>
-                {highlightText(m.altura, searchValue, 'altura')}
-              </span> cm
-              <br />
-
-              <strong className={styles.metaLabel}>Data de Cadastro</strong>: {new Date(m.data_criacao).toLocaleString('pt-BR')}
-              {m.data_modificacao && (
-                <>
-                  <br />
-                  <strong className={styles.metaLabel}>Data de Modificação</strong>: {new Date(m.data_modificacao).toLocaleString('pt-BR')}
-                </>
-              )}
-            </div>
-
-            {/* BOTÕES EDITAR E DELETAR */}
-            <div className="item-actions">
-              <Button label='Editar no Dashboard' onClick={() => handleEditClick(m)} variant='secondary' />
-              <Button label='Deletar' onClick={() => handleDelete(m.id)} variant='danger' />
-            </div>
-          </li>
-        ))}
-      </ul>
+      <MiniatureItemsList
+        styles={styles}
+        listToRender={listToRender}
+        searchField={searchField}
+        searchValue={searchValue}
+        highlightText={highlightText}
+        modo={modo}
+        onEdit={handleEditClick}
+        onDelete={handleDelete}
+      />
 
       {/* Paginação */}
       <Stack
@@ -453,7 +239,7 @@ export default function MiniaturaList({ miniaturas, onDelete, onUpdate, modo = '
         className={styles.pagination}
       >
         <Pagination
-          count={Math.ceil(miniaturas.length / itemsPerPage)}
+          count={totalPages}
           page={page}
           onChange={(event, value) => setPage(value)}
           shape="rounded"

@@ -6,13 +6,17 @@ classDiagram
         +int id
         +String username
         +String email
-        +String password_hash
-        +DateTime created_at
+        +String passwordHash
+        +DateTime createdAt
         +boolean ativo
-        +DateTime deletado_em
-        +String reactivation_token
-        +DateTime reactivation_token_expires_at
+        +DateTime deletadoEm
+        +String reactivationToken
+        +DateTime reactivationTokenExpiresAt
+        +cadastrarConta() boolean
+        +fazerLogin() boolean
+        +reativarConta() boolean
     }
+
     class Miniatura {
         +int id
         +String nome
@@ -21,9 +25,13 @@ classDiagram
         +String material
         +String marca
         +String altura
-        +DateTime data_criacao
-        +int user_id
-        +DateTime data_modificacao
+        +DateTime dataCriacao
+        +int userId
+        +DateTime dataModificacao
+        +salvar() boolean
+        +atualizar() boolean
+        +excluir() boolean
     }
-    User "1" -- "0..*" Miniatura : possui
+
+    User "1" --> "0..*" Miniatura : gerencia
 ```
